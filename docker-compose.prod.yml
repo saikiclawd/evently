@@ -16,7 +16,6 @@ services:
 
   redis:
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD:-}
     volumes:
       - /opt/eventflow/data/redis:/data
     ports: []
