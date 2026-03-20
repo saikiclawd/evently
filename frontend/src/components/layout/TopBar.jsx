@@ -44,9 +44,18 @@ export default function TopBar() {
         </button>
 
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center text-xs font-bold text-white cursor-pointer">
-          {user?.name?.charAt(0)?.toUpperCase() || "U"}
-        </div>
+        {user?.avatar_url ? (
+          <img
+            src={user.avatar_url}
+            alt={user.name}
+            className="w-9 h-9 rounded-full cursor-pointer object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center text-xs font-bold text-white cursor-pointer">
+            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+          </div>
+        )}
       </div>
     </header>
   );

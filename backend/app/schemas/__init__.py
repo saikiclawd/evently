@@ -27,9 +27,10 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = True
-        exclude = ("password_hash",)
+        exclude = ("password_hash", "google_id")
 
     role = fields.String()
+    auth_provider = fields.String(dump_only=True)
     company = ma.Nested(CompanySchema, dump_only=True, only=("id", "name"))
 
 

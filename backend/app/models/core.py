@@ -62,7 +62,7 @@ class User(db.Model):
     id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
     company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
     name = db.Column(db.String(200), nullable=False)
     role = db.Column(PgEnum(UserRole, name="user_role"), default=UserRole.full)
     phone = db.Column(db.String(30))
@@ -71,6 +71,10 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     last_login = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
+
+    # OAuth fields
+    auth_provider = db.Column(db.String(20), default="local")  # local, google
+    google_id = db.Column(db.String(200), unique=True, nullable=True, index=True)
 
     # Relationships
     created_projects = db.relationship("Project", backref="created_by_user", foreign_keys="Project.created_by")
