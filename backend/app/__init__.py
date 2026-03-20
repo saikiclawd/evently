@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Flask Application Factory
+Evently — Flask Application Factory
 """
 import os
 from flask import Flask, jsonify
@@ -36,7 +36,7 @@ def create_app(config_name=None):
     def health():
         return jsonify({
             "status": "healthy",
-            "service": "eventflow-api",
+            "service": "evently-api",
             "version": app.config.get("APP_VERSION", "1.0.0"),
         }), 200
 

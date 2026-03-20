@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════
-# EventFlow Pro — Linode Server Setup Script
+# Evently — Linode Server Setup Script
 # ═══════════════════════════════════════════
 # Run as root on a fresh Ubuntu 24.04 Linode
 # Usage: bash linode-setup.sh
@@ -25,7 +25,7 @@ err()  { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "  EventFlow Pro — Linode Server Setup"
+echo "  Evently — Linode Server Setup"
 echo "═══════════════════════════════════════════"
 echo ""
 
@@ -35,9 +35,9 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # ── Prompt for configuration ──
-read -rp "Enter your domain (e.g., eventflow.yourdomain.com): " DOMAIN
+read -rp "Enter your domain (e.g., evently.yourdomain.com): " DOMAIN
 read -rp "Enter your email for Let's Encrypt SSL: " SSL_EMAIL
-read -rp "Enter GitHub repo URL (e.g., https://github.com/org/eventflow-pro.git): " REPO_URL
+read -rp "Enter GitHub repo URL (e.g., https://github.com/org/evently.git): " REPO_URL
 
 info "Domain: $DOMAIN"
 info "SSL Email: $SSL_EMAIL"
@@ -184,25 +184,25 @@ info "Phase 4: Setting up application..."
 mkdir -p /var/www/certbot
 
 # Clone repository
-if [ ! -d "/opt/eventflow/.git" ]; then
-    rm -rf /opt/eventflow
-    mkdir -p /opt/eventflow
-    git clone "$REPO_URL" /opt/eventflow
+if [ ! -d "/opt/evently/.git" ]; then
+    rm -rf /opt/evently
+    mkdir -p /opt/evently
+    git clone "$REPO_URL" /opt/evently
     log "Repository cloned"
 else
-    cd /opt/eventflow
+    cd /opt/evently
     git pull origin main
     log "Repository updated"
 fi
 
 # Create data dirs AFTER cloning
-mkdir -p /opt/eventflow/data/{postgres,redis}
-mkdir -p /opt/eventflow/backups
-mkdir -p /opt/eventflow/logs
+mkdir -p /opt/evently/data/{postgres,redis}
+mkdir -p /opt/evently/backups
+mkdir -p /opt/evently/logs
 
 # Set ownership
-chown -R deploy:deploy /opt/eventflow
-log "Application directory created at /opt/eventflow"
+chown -R deploy:deploy /opt/evently
+log "Application directory created at /opt/evently"
 
 # ══════════════════════════════════════════
 # PHASE 5: SSL Certificate
@@ -210,7 +210,7 @@ log "Application directory created at /opt/eventflow"
 info "Phase 5: Setting up SSL..."
 
 # Temporary nginx config for certbot challenge
-cat > /etc/nginx/sites-available/eventflow-temp <<EOF
+cat > /etc/nginx/sites-available/evently-temp <<EOF
 server {
     listen 80;
     server_name $DOMAIN;
@@ -220,13 +220,13 @@ server {
     }
 
     location / {
-        return 200 'EventFlow Pro - Setting up...';
+        return 200 'Evently - Setting up...';
         add_header Content-Type text/plain;
     }
 }
 EOF
 
-ln -sf /etc/nginx/sites-available/eventflow-temp /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/evently-temp /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
@@ -251,12 +251,12 @@ log "SSL auto-renewal configured"
 info "Phase 6: Configuring Nginx reverse proxy..."
 
 # Copy and customize the production Nginx config
-cp /opt/eventflow/nginx/eventflow.conf /etc/nginx/sites-available/eventflow
-sed -i "s/eventflow.yourdomain.com/$DOMAIN/g" /etc/nginx/sites-available/eventflow
+cp /opt/evently/nginx/evently.conf /etc/nginx/sites-available/evently
+sed -i "s/evently.yourdomain.com/$DOMAIN/g" /etc/nginx/sites-available/evently
 
-ln -sf /etc/nginx/sites-available/eventflow /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/eventflow-temp
-rm -f /etc/nginx/sites-available/eventflow-temp
+ln -sf /etc/nginx/sites-available/evently /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/evently-temp
+rm -f /etc/nginx/sites-available/evently-temp
 
 nginx -t && systemctl reload nginx
 log "Nginx production config deployed"
@@ -266,7 +266,7 @@ log "Nginx production config deployed"
 # ══════════════════════════════════════════
 info "Phase 7: Environment setup..."
 
-cd /opt/eventflow
+cd /opt/evently
 
 if [ ! -f ".env" ]; then
     cp .env.example .env
@@ -276,9 +276,9 @@ if [ ! -f ".env" ]; then
     # Generate random DB password
     DB_PASS=$(openssl rand -hex 16)
     sed -i "s/CHANGE_ME_STRONG_PASSWORD/$DB_PASS/g" .env
-    sed -i "s/eventflow.yourdomain.com/$DOMAIN/g" .env
+    sed -i "s/evently.yourdomain.com/$DOMAIN/g" .env
     warn ".env file created — EDIT IT with your API keys before first deploy!"
-    warn "  nano /opt/eventflow/.env"
+    warn "  nano /opt/evently/.env"
 else
     log ".env already exists"
 fi
@@ -288,14 +288,14 @@ fi
 # ══════════════════════════════════════════
 info "Phase 8: Setting up backups..."
 
-cp /opt/eventflow/scripts/backup.sh /opt/eventflow/backups/
-chmod +x /opt/eventflow/backups/backup.sh
+cp /opt/evently/scripts/backup.sh /opt/evently/backups/
+chmod +x /opt/evently/backups/backup.sh
 
-cat > /etc/cron.d/eventflow-backup <<EOF
+cat > /etc/cron.d/evently-backup <<EOF
 # Daily database backup at 2 AM UTC
-0 2 * * * deploy /opt/eventflow/backups/backup.sh >> /opt/eventflow/logs/backup.log 2>&1
+0 2 * * * deploy /opt/evently/backups/backup.sh >> /opt/evently/logs/backup.log 2>&1
 # Weekly cleanup of backups older than 30 days
-0 3 * * 0 deploy find /opt/eventflow/backups/ -name "*.sql.gz" -mtime +30 -delete
+0 3 * * 0 deploy find /opt/evently/backups/ -name "*.sql.gz" -mtime +30 -delete
 EOF
 log "Daily backup cron configured"
 
@@ -306,7 +306,7 @@ info "Phase 9: Kernel tuning..."
 
 cat >> /etc/sysctl.conf <<'EOF'
 
-# ── EventFlow Pro — Performance Tuning ──
+# ── Evently — Performance Tuning ──
 net.core.somaxconn = 65535
 net.core.netdev_max_backlog = 65535
 net.ipv4.tcp_max_syn_backlog = 65535
@@ -324,8 +324,8 @@ log "Kernel parameters tuned"
 # ══════════════════════════════════════════
 # PHASE 10: Logrotate
 # ══════════════════════════════════════════
-cat > /etc/logrotate.d/eventflow <<'EOF'
-/opt/eventflow/logs/*.log {
+cat > /etc/logrotate.d/evently <<'EOF'
+/opt/evently/logs/*.log {
     daily
     missingok
     rotate 14
@@ -348,10 +348,10 @@ echo ""
 echo "  Next steps:"
 echo ""
 echo "  1. Edit environment variables:"
-echo "     nano /opt/eventflow/.env"
+echo "     nano /opt/evently/.env"
 echo ""
 echo "  2. Start the application:"
-echo "     cd /opt/eventflow"
+echo "     cd /opt/evently"
 echo "     docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
 echo ""
 echo "  3. Run initial database migration:"

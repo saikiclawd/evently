@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════
-# EventFlow Pro — CI/CD Pipeline
+# Evently — CI/CD Pipeline
 # ═══════════════════════════════════════════
 
 name: CI/CD — Build, Test & Deploy
@@ -25,7 +25,7 @@ jobs:
         env:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
-          POSTGRES_DB: eventflow_test
+          POSTGRES_DB: evently_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -74,7 +74,7 @@ jobs:
       - name: Run tests
         env:
           FLASK_ENV: testing
-          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/eventflow_test
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/evently_test
           REDIS_URL: redis://localhost:6379/0
           CELERY_BROKER_URL: redis://localhost:6379/1
           CELERY_RESULT_BACKEND: redis://localhost:6379/2
@@ -141,8 +141,8 @@ jobs:
           script: |
             set -e
 
-            echo "═══ EventFlow Pro — Deployment Starting ═══"
-            cd /opt/eventflow
+            echo "═══ Evently — Deployment Starting ═══"
+            cd /opt/evently
 
             # Pull latest code
             git pull origin main

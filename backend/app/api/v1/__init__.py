@@ -1,4 +1,4 @@
-"""EventFlow Pro — API v1 Blueprint"""
+"""Evently — API v1 Blueprint"""
 from flask import Blueprint
 
 api_v1_bp = Blueprint("api_v1", __name__)

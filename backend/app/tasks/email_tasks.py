@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Celery Email Tasks
+Evently — Celery Email Tasks
 """
 from app.tasks import celery_app
 
@@ -25,7 +25,7 @@ def send_client_email(message_id):
             return {"status": "error", "reason": "Message or client not found"}
 
         mail = Mail(
-            from_email=os.getenv("FROM_EMAIL", "noreply@eventflow.pro"),
+            from_email=os.getenv("FROM_EMAIL", "noreply@evently.com"),
             to_emails=message.client.email,
             subject=message.subject or "Message from your event team",
             plain_text_content=message.body,

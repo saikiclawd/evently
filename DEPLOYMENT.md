@@ -1,4 +1,4 @@
-# EventFlow Pro — Deployment Guide
+# Evently — Deployment Guide
 
 > Complete step-by-step guide to deploy on Akamai Linode with GitHub Actions CI/CD
 
@@ -46,7 +46,7 @@ Before you begin, ensure you have:
 | Image | Ubuntu 24.04 LTS |
 | Region | Closest to your customers (e.g., Newark, NJ for US East) |
 | Plan | **Dedicated 4GB** ($36/mo) — 2 CPU, 4GB RAM, 80GB SSD |
-| Label | `eventflow-prod` |
+| Label | `eventlyd` |
 | Root Password | Strong, unique password (you'll disable root later) |
 | SSH Key | Add your public key |
 | Backups | Enable ($2/mo — recommended) |
@@ -66,7 +66,7 @@ linode-cli linodes create \
   --type g6-dedicated-2 \
   --region us-east \
   --image linode/ubuntu24.04 \
-  --label eventflow-prod \
+  --label eventlyd \
   --root_pass "YOUR_STRONG_PASSWORD" \
   --authorized_keys "$(cat ~/.ssh/id_ed25519.pub)" \
   --backups_enabled true \
@@ -81,8 +81,8 @@ Point your domain to the Linode IP. In your DNS provider:
 
 | Record | Name | Value | TTL |
 |--------|------|-------|-----|
-| A | eventflow (or @) | YOUR_LINODE_IP | 300 |
-| AAAA | eventflow (or @) | YOUR_LINODE_IPV6 | 300 |
+| A | evently (or @) | YOUR_LINODE_IP | 300 |
+| AAAA | evently (or @) | YOUR_LINODE_IPV6 | 300 |
 
 Or use **Linode DNS Manager** (free):
 
@@ -95,7 +95,7 @@ Or use **Linode DNS Manager** (free):
    - `ns4.linode.com`
    - `ns5.linode.com`
 
-Wait for DNS propagation (check with `dig eventflow.yourdomain.com`).
+Wait for DNS propagation (check with `dig evently.yourdomain.com`).
 
 ---
 
@@ -105,19 +105,19 @@ Generate a **dedicated deploy key** (separate from your personal key):
 
 ```bash
 # On your LOCAL machine
-ssh-keygen -t ed25519 -C "eventflow-deploy" -f ~/.ssh/eventflow_deploy
+ssh-keygen -t ed25519 -C "evently-deploy" -f ~/.ssh/evently_deploy
 
 # Copy to server
-ssh-copy-id -i ~/.ssh/eventflow_deploy.pub root@YOUR_LINODE_IP
+ssh-copy-id -i ~/.ssh/evently_deploy.pub root@YOUR_LINODE_IP
 
 # Test connection
-ssh -i ~/.ssh/eventflow_deploy root@YOUR_LINODE_IP "echo 'Connected!'"
+ssh -i ~/.ssh/evently_deploy root@YOUR_LINODE_IP "echo 'Connected!'"
 ```
 
 Save the **private key** contents — you'll need it for GitHub Secrets:
 
 ```bash
-cat ~/.ssh/eventflow_deploy
+cat ~/.ssh/evently_deploy
 # Copy the ENTIRE output including BEGIN and END lines
 ```
 
@@ -129,10 +129,10 @@ The setup script handles everything: security hardening, Docker, Nginx, SSL, bac
 
 ```bash
 # Copy the setup script to your server
-scp -i ~/.ssh/eventflow_deploy scripts/linode-setup.sh root@YOUR_LINODE_IP:/root/
+scp -i ~/.ssh/evently_deploy scripts/linode-setup.sh root@YOUR_LINODE_IP:/root/
 
 # SSH in and run it
-ssh -i ~/.ssh/eventflow_deploy root@YOUR_LINODE_IP
+ssh -i ~/.ssh/evently_deploy root@YOUR_LINODE_IP
 
 # On the server:
 chmod +x /root/linode-setup.sh
@@ -150,7 +150,7 @@ The script will prompt for:
 2. **Docker installation** — Docker Engine + Compose plugin with log rotation
 3. **Nginx** — installed as host-level reverse proxy
 4. **SSL** — Let's Encrypt certificate with auto-renewal
-5. **Application** — clones repo to `/opt/eventflow`, creates `.env`
+5. **Application** — clones repo to `/opt/evently`, creates `.env`
 6. **Backups** — daily cron job for PostgreSQL dumps
 7. **Kernel tuning** — TCP/connection optimizations for production
 
@@ -161,12 +161,12 @@ The script will prompt for:
 ### Initialize the repo locally:
 
 ```bash
-cd eventflow-pro
+cd evently
 
 # Initialize git
 git init
 git add .
-git commit -m "Initial commit: full EventFlow Pro stack"
+git commit -m "Initial commit: full Evently stack"
 
 # Add remote and push
 git remote add origin https://github.com/saikiclawd/evently.git
@@ -195,7 +195,7 @@ Add these **Repository Secrets**:
 |-------------|-------|-------------|
 | `LINODE_HOST` | `YOUR_LINODE_IP` | Public IP of your Linode |
 | `DEPLOY_USER` | `deploy` | SSH username |
-| `SSH_PRIVATE_KEY` | Contents of `~/.ssh/eventflow_deploy` | Full private key with BEGIN/END |
+| `SSH_PRIVATE_KEY` | Contents of `~/.ssh/evently_deploy` | Full private key with BEGIN/END |
 | `SSH_PORT` | `22` | SSH port |
 
 Add an **Environment** called `production`:
@@ -210,10 +210,10 @@ Add an **Environment** called `production`:
 ### Configure environment variables:
 
 ```bash
-ssh -i ~/.ssh/eventflow_deploy deploy@YOUR_LINODE_IP
+ssh -i ~/.ssh/evently_deploy deploy@YOUR_LINODE_IP
 
 # Edit the environment file
-cd /opt/eventflow
+cd /opt/evently
 nano .env
 ```
 
@@ -222,7 +222,7 @@ Fill in ALL required values (Stripe keys, SendGrid, database passwords, etc.).
 ### Start the stack:
 
 ```bash
-cd /opt/eventflow
+cd /opt/evently
 
 # Build and start all services
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
@@ -240,7 +240,7 @@ curl http://localhost:3000/
 
 ### Verify SSL:
 
-Open `https://eventflow.yourdomain.com` in your browser. You should see the React app with a valid SSL certificate.
+Open `https://evently.yourdomain.com` in your browser. You should see the React app with a valid SSL certificate.
 
 ---
 
@@ -280,7 +280,7 @@ Nginx load-balances between both API instances, so at least one is always runnin
 
 ```bash
 ssh deploy@YOUR_LINODE_IP
-cd /opt/eventflow
+cd /opt/evently
 bash scripts/deploy.sh
 ```
 
@@ -305,14 +305,14 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f celery-w
 
 ```bash
 # Connect to PostgreSQL
-docker compose exec postgres psql -U eventflow -d eventflow_pro
+docker compose exec postgres psql -U evently -d evently
 
 # Manual backup
-bash /opt/eventflow/scripts/backup.sh
+bash /opt/evently/scripts/backup.sh
 
 # Restore from backup
-gunzip < /opt/eventflow/backups/eventflow_20260319.sql.gz | \
-    docker compose exec -T postgres psql -U eventflow -d eventflow_pro
+gunzip < /opt/evently/backups/evently_20260319.sql.gz | \
+    docker compose exec -T postgres psql -U evently -d evently
 ```
 
 ### Resource monitoring:
@@ -326,7 +326,7 @@ docker stats
 
 # Disk usage
 df -h
-ncdu /opt/eventflow
+ncdu /opt/evently
 ```
 
 ### SSL certificate renewal:
@@ -361,10 +361,10 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 ```bash
 # Check if postgres container is healthy
-docker compose exec postgres pg_isready -U eventflow
+docker compose exec postgres pg_isready -U evently
 
 # Check DATABASE_URL in .env matches docker-compose service name
-# Should be: postgresql://eventflow:PASSWORD@postgres:5432/eventflow_pro
+# Should be: postgresql://evently:PASSWORD@postgres:5432/evently
 ```
 
 ### Nginx 502 Bad Gateway:
@@ -395,7 +395,7 @@ docker system prune -a --volumes
 sudo ncdu /
 
 # Clean old backups
-find /opt/eventflow/backups -mtime +7 -delete
+find /opt/evently/backups -mtime +7 -delete
 ```
 
 ---

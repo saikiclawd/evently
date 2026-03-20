@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Project & Proposal Models
+Evently — Project & Proposal Models
 """
 import enum
 import secrets

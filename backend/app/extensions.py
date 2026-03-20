@@ -1,4 +1,4 @@
-"""EventFlow Pro — Extension Instances"""
+"""Evently — Extension Instances"""
 import os
 import redis
 from flask_sqlalchemy import SQLAlchemy

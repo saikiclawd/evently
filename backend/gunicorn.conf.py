@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════
-# EventFlow Pro — Gunicorn Configuration
+# Evently — Gunicorn Configuration
 # ═══════════════════════════════════════════
 
 import multiprocessing
@@ -25,7 +25,7 @@ loglevel = os.getenv("LOG_LEVEL", "info").lower()
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
 
 # Process Naming
-proc_name = "eventflow-api"
+proc_name = "evently-api"
 
 # Security
 limit_request_line = 8190
@@ -39,7 +39,7 @@ tmp_upload_dir = None
 
 # Hooks
 def on_starting(server):
-    server.log.info("EventFlow Pro API starting...")
+    server.log.info("Evently API starting...")
 
 def post_fork(server, worker):
     server.log.info(f"Worker spawned (pid: {worker.pid})")

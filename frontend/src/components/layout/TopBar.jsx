@@ -18,7 +18,7 @@ const pageTitles = {
 export default function TopBar() {
   const { pathname } = useLocation();
   const { user } = useAuthStore();
-  const title = pageTitles[pathname] || "EventFlow Pro";
+  const title = pageTitles[pathname] || "Evently";
 
   return (
     <header className="h-16 px-7 flex items-center justify-between border-b border-dark-border bg-dark-surface flex-shrink-0">

@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Payment Processor (Stripe Integration)
+Evently — Payment Processor (Stripe Integration)
 """
 import os
 import stripe

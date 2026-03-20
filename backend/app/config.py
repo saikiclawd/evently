@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Configuration
+Evently — Configuration
 """
 import os
 from datetime import timedelta
@@ -38,13 +38,13 @@ class BaseConfig:
 
     # SendGrid
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-    FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@eventflow.com")
+    FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@evently.com")
 
     # S3 / Linode Object Storage
     S3_ENDPOINT = os.getenv("S3_ENDPOINT")
     S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY")
     S3_SECRET_KEY = os.getenv("S3_SECRET_KEY")
-    S3_BUCKET = os.getenv("S3_BUCKET", "eventflow-uploads")
+    S3_BUCKET = os.getenv("S3_BUCKET", "evently-uploads")
 
     # CORS
     CORS_ORIGINS = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -54,7 +54,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        "postgresql://eventflow:devpassword@postgres:5432/eventflow_pro"
+        "postgresql://evently:devpassword@postgres:5432/evently"
     )
 
 

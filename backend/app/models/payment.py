@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Payment Models
+Evently — Payment Models
 """
 import enum
 from app.extensions import db

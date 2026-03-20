@@ -80,7 +80,7 @@ export default function WebsitePage() {
           <div className="mt-6 p-4 bg-dark-surface rounded-xl border border-dark-border">
             <div className="text-[10px] text-gray-500 font-semibold uppercase tracking-wide mb-2">Embed Code</div>
             <code className="text-[11px] text-teal-400 font-mono block break-all leading-relaxed">
-              {'<script src="https://eventflow.yourdomain.com/widget.js" data-company="YOUR_ID"></script>'}
+              {'<script src="https://evently.yourdomain.com/widget.js" data-company="YOUR_ID"></script>'}
             </code>
             <p className="text-[11px] text-gray-500 mt-2">Add this to your website to enable the wishlist widget</p>
           </div>

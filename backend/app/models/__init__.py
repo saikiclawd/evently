@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Model Registry
+Evently — Model Registry
 Import all models here so Alembic can auto-detect them.
 """
 from app.models.core import Company, User, Client, UserRole

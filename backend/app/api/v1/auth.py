@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Auth API
+Evently — Auth API
 """
 from flask import request, jsonify
 from flask_jwt_extended import (

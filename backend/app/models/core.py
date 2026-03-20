@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Core Models: Company, User, Client
+Evently — Core Models: Company, User, Client
 """
 import uuid
 from datetime import datetime, timezone

@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Marshmallow Schemas
+Evently — Marshmallow Schemas
 """
 from app.extensions import ma
 from app.models import (

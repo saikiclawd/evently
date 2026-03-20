@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Route Optimizer (AI Auto-Route)
+Evently — Route Optimizer (AI Auto-Route)
 
 Uses Google OR-Tools to solve the Traveling Salesman Problem (TSP)
 for multi-stop delivery routes.

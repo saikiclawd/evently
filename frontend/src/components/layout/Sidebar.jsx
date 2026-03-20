@@ -34,7 +34,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </div>
         {!collapsed && (
           <div>
-            <div className="text-sm font-extrabold text-gray-100 tracking-tight">EventFlow</div>
+            <div className="text-sm font-extrabold text-gray-100 tracking-tight">Evently</div>
             <div className="text-[10px] font-semibold text-gray-500 tracking-widest">PRO</div>
           </div>
         )}

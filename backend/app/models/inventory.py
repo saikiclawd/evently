@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Inventory Models
+Evently — Inventory Models
 """
 import enum
 from app.extensions import db

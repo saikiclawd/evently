@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════
-# EventFlow Pro — Linode Setup (IP-only)
+# Evently — Linode Setup (IP-only)
 # Server: 172.105.18.229
 # ═══════════════════════════════════════════
 # Run as root: bash setup-172.sh
@@ -17,7 +17,7 @@ REPO_URL="https://github.com/saikiclawd/evently.git"
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "  EventFlow Pro — Server Setup"
+echo "  Evently — Server Setup"
 echo "  IP: $LINODE_IP"
 echo "═══════════════════════════════════════════"
 echo ""
@@ -136,32 +136,32 @@ log "Nginx installed"
 # ══════════════════════════════════════════
 info "Phase 4: Setting up application..."
 
-if [ ! -d "/opt/eventflow/.git" ]; then
-    rm -rf /opt/eventflow
-    mkdir -p /opt/eventflow
-    git clone "$REPO_URL" /opt/eventflow
+if [ ! -d "/opt/evently/.git" ]; then
+    rm -rf /opt/evently
+    mkdir -p /opt/evently
+    git clone "$REPO_URL" /opt/evently
     log "Repository cloned"
 else
-    cd /opt/eventflow
+    cd /opt/evently
     git pull origin main
     log "Repository updated"
 fi
 
 # Create data dirs AFTER cloning
-mkdir -p /opt/eventflow/data/{postgres,redis}
-mkdir -p /opt/eventflow/backups
-mkdir -p /opt/eventflow/logs
+mkdir -p /opt/evently/data/{postgres,redis}
+mkdir -p /opt/evently/backups
+mkdir -p /opt/evently/logs
 
-chown -R deploy:deploy /opt/eventflow
-log "App at /opt/eventflow"
+chown -R deploy:deploy /opt/evently
+log "App at /opt/evently"
 
 # ══════════════════════════════════════════
 # PHASE 5: Nginx Config (IP-only, no SSL)
 # ══════════════════════════════════════════
 info "Phase 5: Configuring Nginx..."
 
-cp /opt/eventflow/nginx/eventflow-ip.conf /etc/nginx/sites-available/eventflow
-ln -sf /etc/nginx/sites-available/eventflow /etc/nginx/sites-enabled/
+cp /opt/evently/nginx/evently-ip.conf /etc/nginx/sites-available/evently
+ln -sf /etc/nginx/sites-available/evently /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t && systemctl reload nginx
@@ -172,17 +172,17 @@ log "Nginx configured for http://$LINODE_IP"
 # ══════════════════════════════════════════
 info "Phase 6: Environment setup..."
 
-cd /opt/eventflow
+cd /opt/evently
 if [ ! -f ".env" ]; then
     cp .env.example .env
     SECRET=$(openssl rand -hex 32)
     DB_PASS=$(openssl rand -hex 16)
     sed -i "s/CHANGE_ME_TO_RANDOM_64_CHAR_STRING/$SECRET/" .env
     sed -i "s/CHANGE_ME_STRONG_PASSWORD/$DB_PASS/g" .env
-    sed -i "s/eventflow.yourdomain.com/$LINODE_IP/g" .env
-    sed -i "s|FRONTEND_URL=https://eventflow.yourdomain.com|FRONTEND_URL=http://$LINODE_IP|g" .env
+    sed -i "s/evently.yourdomain.com/$LINODE_IP/g" .env
+    sed -i "s|FRONTEND_URL=https://evently.yourdomain.com|FRONTEND_URL=http://$LINODE_IP|g" .env
     warn ".env created with auto-generated secrets"
-    warn "  Edit API keys later: nano /opt/eventflow/.env"
+    warn "  Edit API keys later: nano /opt/evently/.env"
 else
     log ".env already exists"
 fi
@@ -192,10 +192,10 @@ fi
 # ══════════════════════════════════════════
 info "Phase 7: Backups..."
 
-chmod +x /opt/eventflow/scripts/backup.sh
-cat > /etc/cron.d/eventflow-backup <<EOF
-0 2 * * * deploy /opt/eventflow/scripts/backup.sh >> /opt/eventflow/logs/backup.log 2>&1
-0 3 * * 0 deploy find /opt/eventflow/backups/ -name "*.sql.gz" -mtime +30 -delete
+chmod +x /opt/evently/scripts/backup.sh
+cat > /etc/cron.d/evently-backup <<EOF
+0 2 * * * deploy /opt/evently/scripts/backup.sh >> /opt/evently/logs/backup.log 2>&1
+0 3 * * 0 deploy find /opt/evently/backups/ -name "*.sql.gz" -mtime +30 -delete
 EOF
 log "Daily backup cron set"
 
@@ -204,10 +204,10 @@ log "Daily backup cron set"
 # ══════════════════════════════════════════
 info "Phase 8: Kernel tuning..."
 
-if ! grep -q "EventFlow" /etc/sysctl.conf; then
+if ! grep -q "Evently" /etc/sysctl.conf; then
 cat >> /etc/sysctl.conf <<'EOF'
 
-# ── EventFlow Pro ──
+# ── Evently ──
 net.core.somaxconn = 65535
 net.ipv4.tcp_fin_timeout = 10
 net.ipv4.tcp_tw_reuse = 1
@@ -224,7 +224,7 @@ log "Kernel tuned"
 # ══════════════════════════════════════════
 info "Phase 9: Starting the application stack..."
 
-cd /opt/eventflow
+cd /opt/evently
 
 # Build and start
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build 2>&1 | tail -5
@@ -264,7 +264,7 @@ echo "    SSH_PORT          = 22"
 echo ""
 echo "  Next steps:"
 echo "    1. Add the 4 GitHub Secrets above"
-echo "    2. Edit API keys:  ssh deploy@$LINODE_IP 'nano /opt/eventflow/.env'"
+echo "    2. Edit API keys:  ssh deploy@$LINODE_IP 'nano /opt/evently/.env'"
 echo "    3. Push to main to auto-deploy!"
 echo ""
 echo "  Useful commands:"

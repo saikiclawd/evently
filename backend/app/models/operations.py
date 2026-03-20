@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Dispatch & Operations Models
+Evently — Dispatch & Operations Models
 """
 import enum
 from app.extensions import db

@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════
-# EventFlow Pro — Database Backup Script
+# Evently — Database Backup Script
 # ═══════════════════════════════════════════
 # Runs daily via cron. Backs up PostgreSQL to local + S3.
 
 set -euo pipefail
 
-BACKUP_DIR="/opt/eventflow/backups"
+BACKUP_DIR="/opt/evently/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-FILENAME="eventflow_${TIMESTAMP}.sql.gz"
+FILENAME="evently_${TIMESTAMP}.sql.gz"
 
 # Source .env for credentials
 set -a
-source /opt/eventflow/.env
+source /opt/evently/.env
 set +a
 
 echo "[$(date)] Starting backup..."
 
 # Dump database via Docker
-docker compose -f /opt/eventflow/docker-compose.yml \
-    -f /opt/eventflow/docker-compose.prod.yml \
+docker compose -f /opt/evently/docker-compose.yml \
+    -f /opt/evently/docker-compose.prod.yml \
     exec -T postgres pg_dump \
     -U "${POSTGRES_USER}" \
     -d "${POSTGRES_DB}" \
@@ -51,7 +51,7 @@ if [ -n "${S3_ENDPOINT:-}" ] && [ -n "${S3_ACCESS_KEY:-}" ]; then
 fi
 
 # Cleanup local backups older than 7 days
-find "${BACKUP_DIR}" -name "eventflow_*.sql.gz" -mtime +7 -delete
+find "${BACKUP_DIR}" -name "evently_*.sql.gz" -mtime +7 -delete
 echo "[$(date)] Cleaned up old local backups"
 
 echo "[$(date)] Backup complete."

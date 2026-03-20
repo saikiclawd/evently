@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Inventory Conflict Detection Engine
+Evently — Inventory Conflict Detection Engine
 
 The most critical business service. Checks item availability across
 overlapping date ranges with buffer times using efficient SQL queries.

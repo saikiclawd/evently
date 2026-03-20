@@ -19,7 +19,7 @@ def test_health_endpoint(client):
     assert response.status_code == 200
     data = response.get_json()
     assert data["status"] == "healthy"
-    assert data["service"] == "eventflow-api"
+    assert data["service"] == "evently-api"
 
 
 def test_404_handler(client):

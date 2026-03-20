@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Clients, Payments, Dispatch & Reports APIs
+Evently — Clients, Payments, Dispatch & Reports APIs
 """
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity

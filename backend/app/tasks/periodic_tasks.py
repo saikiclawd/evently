@@ -1,5 +1,5 @@
 """
-EventFlow Pro — Periodic Celery Tasks
+Evently — Periodic Celery Tasks
 """
 from app.tasks import celery_app
 

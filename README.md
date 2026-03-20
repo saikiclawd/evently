@@ -1,4 +1,4 @@
-# EventFlow Pro — Full-Stack Event Rental SaaS
+# Evently — Full-Stack Event Rental SaaS
 
 > React.js Frontend + Flask Backend · Deployed on Akamai Linode
 
@@ -26,7 +26,7 @@
 ```bash
 # 1. Clone
 git clone https://github.com/saikiclawd/evently.git
-cd eventflow-pro
+cd evently
 
 # 2. Copy environment file
 cp .env.example .env   # edit with your keys
@@ -58,7 +58,7 @@ git push origin main
 ## Project Structure
 
 ```
-eventflow-pro/
+evently/
 ├── .github/workflows/
 │   └── deploy.yml              # CI/CD pipeline
 ├── backend/
@@ -82,7 +82,7 @@ eventflow-pro/
 │   ├── Dockerfile
 │   └── nginx.conf              # Frontend container nginx
 ├── nginx/
-│   └── eventflow.conf          # Main reverse proxy config
+│   └── evently.conf          # Main reverse proxy config
 ├── docker/
 │   ├── docker-compose.yml      # Local development
 │   └── docker-compose.prod.yml # Production overrides

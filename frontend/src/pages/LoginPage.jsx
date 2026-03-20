@@ -41,7 +41,7 @@ export default function LoginPage() {
             <Zap size={24} className="text-white" />
           </div>
           <div>
-            <div className="text-2xl font-extrabold text-gray-100 tracking-tight">EventFlow</div>
+            <div className="text-2xl font-extrabold text-gray-100 tracking-tight">Evently</div>
             <div className="text-xs font-semibold text-gray-500 tracking-[0.2em]">PRO</div>
           </div>
         </div>
