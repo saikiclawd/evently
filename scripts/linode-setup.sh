@@ -116,7 +116,7 @@ log "Fail2ban configured"
 sed -i 's/#PermitRootLogin yes/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
 sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 sed -i 's/#MaxAuthTries 6/MaxAuthTries 3/' /etc/ssh/sshd_config
-systemctl restart sshd
+systemctl restart ssh || systemctl restart sshd || true
 log "SSH hardened"
 
 # ── Auto security updates ──
