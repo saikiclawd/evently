@@ -3,7 +3,8 @@ from flask import Blueprint
 
 api_v1_bp = Blueprint("api_v1", __name__)
 
-# Import routes to register them
-# from app.api.v1 import auth, inventory, projects, proposals
-# from app.api.v1 import payments, clients, dispatch, calendar
-# from app.api.v1 import reports, website, barcoding
+# Import routes to register them with the blueprint
+from app.api.v1 import auth        # noqa: E402, F401
+from app.api.v1 import inventory   # noqa: E402, F401
+from app.api.v1 import projects    # noqa: E402, F401
+from app.api.v1 import routes      # noqa: E402, F401
