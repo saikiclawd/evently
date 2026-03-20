@@ -53,7 +53,7 @@ $COMPOSE up -d --no-deps --force-recreate api
 sleep 8
 
 # Health check API 1
-if curl -sf http://localhost:5000/api/v1/health > /dev/null; then
+if curl -sf http://localhost:8500/api/v1/health > /dev/null; then
     log "API instance 1 healthy ✓"
 else
     warn "API instance 1 health check failed — continuing..."
@@ -74,13 +74,13 @@ docker image prune -f > /dev/null 2>&1
 # Final health check
 sleep 5
 echo ""
-if curl -sf http://localhost:5000/api/v1/health > /dev/null; then
+if curl -sf http://localhost:8500/api/v1/health > /dev/null; then
     log "API: ✅ Healthy"
 else
     warn "API: ⚠️  Not responding"
 fi
 
-if curl -sf http://localhost:3000/ > /dev/null; then
+if curl -sf http://localhost:8600/ > /dev/null; then
     log "Frontend: ✅ Healthy"
 else
     warn "Frontend: ⚠️  Not responding"

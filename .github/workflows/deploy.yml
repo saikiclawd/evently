@@ -158,8 +158,8 @@ jobs:
             sleep 15
 
             # Health checks
-            curl -sf http://localhost:5000/api/v1/health && echo " API: OK" || echo " API: starting..."
-            curl -sf http://localhost:3000/ > /dev/null && echo " Frontend: OK" || echo " Frontend: starting..."
+            curl -sf http://localhost:8500/api/v1/health && echo " API: OK" || echo " API: starting..."
+            curl -sf http://localhost:8600/ > /dev/null && echo " Frontend: OK" || echo " Frontend: starting..."
 
             echo "═══ Deployment Complete ═══"
 

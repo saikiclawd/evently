@@ -23,7 +23,7 @@ services:
   api:
     restart: always
     ports:
-      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:8500:5000"
     environment:
       FLASK_ENV: production
       GUNICORN_WORKERS: 4
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "127.0.0.1:5001:5000"
+      - "127.0.0.1:8501:5000"
     environment:
       FLASK_ENV: production
       DATABASE_URL: ${DATABASE_URL}
@@ -99,7 +99,7 @@ services:
   frontend:
     restart: always
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:8600:3000"
     deploy:
       resources:
         limits:
