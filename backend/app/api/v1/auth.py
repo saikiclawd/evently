@@ -191,19 +191,33 @@ def google_auth():
 def _verify_google_id_token(credential):
     """Verify a Google ID token (from One Tap or Sign In With Google)."""
     try:
-        from google.oauth2 import id_token
-        from google.auth.transport import requests as google_requests
-        client_id = os.getenv("GOOGLE_CLIENT_ID")
-        idinfo = id_token.verify_oauth2_token(
-            credential, google_requests.Request(), client_id
+        # Method 1: Use Google's tokeninfo endpoint (most reliable)
+        resp = http_requests.get(
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}"
         )
+        if resp.status_code != 200:
+            return None
+
+        idinfo = resp.json()
+
+        # Verify the token was meant for our app
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        if idinfo.get("aud") != client_id:
+            return None
+
+        # Verify email is verified
+        if idinfo.get("email_verified") != "true":
+            return None
+
         return {
             "id": idinfo["sub"],
             "email": idinfo["email"],
-            "name": idinfo.get("name", ""),
+            "name": idinfo.get("name", idinfo.get("email", "").split("@")[0]),
             "picture": idinfo.get("picture", ""),
         }
-    except Exception:
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return None
 
 
