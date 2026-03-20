@@ -137,8 +137,8 @@ def _handle_payment_failure(intent):
 
     if payment:
         payment.status = PaymentStatus.failed
-        payment.metadata = {
-            **(payment.metadata or {}),
+        payment.payment_metadata = {
+            **(payment.payment_metadata or {}),
             "failure_message": intent.get("last_payment_error", {}).get("message"),
         }
         db.session.commit()

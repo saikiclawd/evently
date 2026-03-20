@@ -56,7 +56,7 @@ class Payment(db.Model):
     card_brand = db.Column(db.String(20))
     processing_fee = db.Column(db.Numeric(10, 2), default=0)
     net_amount = db.Column(db.Numeric(12, 2))
-    metadata = db.Column(JSONB, default=dict)
+    payment_metadata = db.Column(JSONB, default=dict)
 
     due_date = db.Column(db.DateTime(timezone=True))
     paid_at = db.Column(db.DateTime(timezone=True))
