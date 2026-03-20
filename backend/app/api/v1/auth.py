@@ -108,9 +108,16 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 def google_config():
     """Return the Google OAuth client ID for the frontend."""
     client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+    # Only enable if it's a real client ID (not a placeholder)
+    is_valid = (
+        bool(client_id)
+        and client_id.endswith(".apps.googleusercontent.com")
+        and "XXXX" not in client_id
+        and len(client_id) > 40
+    )
     return jsonify({
-        "client_id": client_id,
-        "enabled": bool(client_id),
+        "client_id": client_id if is_valid else "",
+        "enabled": is_valid,
     })
 
 
