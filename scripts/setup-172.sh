@@ -136,18 +136,21 @@ log "Nginx installed"
 # ══════════════════════════════════════════
 info "Phase 4: Setting up application..."
 
-mkdir -p /opt/eventflow/data/{postgres,redis}
-mkdir -p /opt/eventflow/backups
-mkdir -p /opt/eventflow/logs
-
-cd /opt/eventflow
-if [ ! -d ".git" ]; then
-    git clone "$REPO_URL" .
+if [ ! -d "/opt/eventflow/.git" ]; then
+    rm -rf /opt/eventflow
+    mkdir -p /opt/eventflow
+    git clone "$REPO_URL" /opt/eventflow
     log "Repository cloned"
 else
+    cd /opt/eventflow
     git pull origin main
     log "Repository updated"
 fi
+
+# Create data dirs AFTER cloning
+mkdir -p /opt/eventflow/data/{postgres,redis}
+mkdir -p /opt/eventflow/backups
+mkdir -p /opt/eventflow/logs
 
 chown -R deploy:deploy /opt/eventflow
 log "App at /opt/eventflow"
