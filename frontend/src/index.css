@@ -8,6 +8,6 @@
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-dark-border rounded; }
-  ::selection { background: rgba(88, 166, 255, 0.3); }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded; }
+  ::selection { background: rgba(37, 99, 235, 0.15); }
 }

@@ -3,9 +3,9 @@ import { useRevenueReport, usePipeline } from "@/hooks/useApi";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const pipelineColors = {
-  draft: "#64748B", proposal_sent: "#F59E0B", signed: "#3B82F6",
-  deposit_paid: "#58A6FF", confirmed: "#22C55E", paid_in_full: "#14B8A6",
-  completed: "#06B6D4", cancelled: "#EF4444",
+  draft: "#94a3b8", proposal_sent: "#d97706", signed: "#3B82F6",
+  deposit_paid: "#2563eb", confirmed: "#16a34a", paid_in_full: "#0d9488",
+  completed: "#06B6D4", cancelled: "#dc2626",
 };
 
 export default function ReportsPage() {
@@ -19,11 +19,11 @@ export default function ReportsPage() {
     <div className="p-7 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Revenue Chart */}
-        <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
+        <div className="bg-white rounded-xl p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-sm font-bold text-gray-100">Revenue Overview</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{revenueData?.year || 2026} monthly breakdown</p>
+              <h3 className="text-sm font-bold text-gray-900">Revenue Overview</h3>
+              <p className="text-xs text-gray-400 mt-0.5">{revenueData?.year || 2026} monthly breakdown</p>
             </div>
           </div>
           <div className="flex items-end gap-1.5 h-44">
@@ -34,11 +34,11 @@ export default function ReportsPage() {
               const isCurrent = i === new Date().getMonth();
               return (
                 <div key={label} className="flex-1 flex flex-col items-center gap-1 group">
-                  <div className="text-[9px] text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity font-mono">
+                  <div className="text-[9px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity font-mono">
                     ${(rev / 1000).toFixed(1)}k
                   </div>
                   <div
-                    className={`w-full rounded transition-all duration-300 ${isCurrent ? "bg-accent" : "bg-dark-border"}`}
+                    className={`w-full rounded transition-all duration-300 ${isCurrent ? "bg-accent" : "bg-gray-200"}`}
                     style={{ height: Math.max(h, 4) }}
                   />
                   <span className="text-[9px] text-gray-500">{label}</span>
@@ -49,23 +49,23 @@ export default function ReportsPage() {
         </div>
 
         {/* Sales Pipeline */}
-        <div className="bg-dark-card rounded-xl p-6 border border-dark-border">
-          <h3 className="text-sm font-bold text-gray-100 mb-5">Sales Pipeline</h3>
+        <div className="bg-white rounded-xl p-6 border border-gray-200">
+          <h3 className="text-sm font-bold text-gray-900 mb-5">Sales Pipeline</h3>
           <div className="space-y-3">
             {(pipeline || []).map((s) => (
-              <div key={s.stage} className="flex items-center gap-3 py-2 border-b border-dark-border last:border-0">
-                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: pipelineColors[s.stage] || "#64748B" }} />
+              <div key={s.stage} className="flex items-center gap-3 py-2 border-b border-gray-200 last:border-0">
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: pipelineColors[s.stage] || "#94a3b8" }} />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-200">{s.stage?.replace("_", " ")}</div>
+                  <div className="text-sm font-medium text-gray-800">{s.stage?.replace("_", " ")}</div>
                 </div>
                 <span className="text-xs text-gray-500">{s.count} projects</span>
-                <span className="text-sm font-bold text-gray-100 font-mono min-w-[70px] text-right">
+                <span className="text-sm font-bold text-gray-900 font-mono min-w-[70px] text-right">
                   ${(s.value / 1000).toFixed(1)}k
                 </span>
               </div>
             ))}
             {(!pipeline || pipeline.length === 0) && (
-              <p className="text-sm text-gray-500 text-center py-8">No pipeline data yet</p>
+              <p className="text-sm text-gray-400 text-center py-8">No pipeline data yet</p>
             )}
           </div>
         </div>

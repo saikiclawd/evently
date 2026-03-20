@@ -39,24 +39,24 @@ export default function CalendarPage() {
   return (
     <div className="p-7">
       <div className="flex items-center gap-4 mb-5">
-        <button onClick={prev} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-dark-card border border-dark-border">
+        <button onClick={prev} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-white border border-gray-200">
           <ChevronLeft size={16} />
         </button>
-        <h2 className="text-lg font-bold text-gray-100">{MONTHS[month]} {year}</h2>
-        <button onClick={next} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-dark-card border border-dark-border">
+        <h2 className="text-lg font-bold text-gray-900">{MONTHS[month]} {year}</h2>
+        <button onClick={next} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-white border border-gray-200">
           <ChevronRight size={16} />
         </button>
-        <button className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dark-border text-xs font-semibold text-gray-300 hover:bg-dark-surface">
+        <button className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50">
           <RefreshCw size={14} />Sync Google Calendar
         </button>
       </div>
 
       <div className="grid grid-cols-[1fr_320px] gap-5">
         {/* Calendar Grid */}
-        <div className="bg-dark-card rounded-xl border border-dark-border p-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="grid grid-cols-7 gap-1 mb-2">
             {DAYS.map((d) => (
-              <div key={d} className="text-center text-[11px] font-semibold text-gray-500 py-2">{d}</div>
+              <div key={d} className="text-center text-[11px] font-semibold text-gray-400 py-2">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -69,10 +69,10 @@ export default function CalendarPage() {
               return (
                 <button key={day} onClick={() => setSelectedDay(day)}
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 text-sm transition-all ${
-                    isSelected ? "border-2 border-accent bg-accent/5 text-accent font-bold"
-                    : hasEvents ? "bg-dark-surface hover:bg-dark-border text-gray-100 font-semibold"
-                    : "text-gray-500 hover:bg-dark-surface"
-                  } ${isToday ? "ring-1 ring-accent/30" : ""}`}>
+                    isSelected ? "border-2 border-blue-500 bg-blue-50 text-blue-600 font-bold"
+                    : hasEvents ? "bg-gray-50 hover:bg-gray-100 text-gray-900 font-semibold"
+                    : "text-gray-400 hover:bg-gray-50"
+                  } ${isToday ? "ring-2 ring-blue-200" : ""}`}>
                   {day}
                   {hasEvents && (
                     <div className="flex gap-0.5">
@@ -88,8 +88,8 @@ export default function CalendarPage() {
         </div>
 
         {/* Day Detail */}
-        <div className="bg-dark-card rounded-xl border border-dark-border p-5">
-          <h3 className="text-sm font-bold text-gray-100 mb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-bold text-gray-900 mb-4">
             {selectedDay ? `${MONTHS[month]} ${selectedDay}, ${year}` : "Select a day"}
           </h3>
           {!selectedDay ? (
@@ -105,16 +105,16 @@ export default function CalendarPage() {
           ) : (
             <div className="space-y-3">
               {selectedEvents.map((p) => (
-                <div key={p.id} className="p-3.5 rounded-lg bg-dark-surface border border-dark-border">
-                  <div className="text-sm font-semibold text-gray-100">{p.event_name}</div>
+                <div key={p.id} className="p-3.5 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="text-sm font-semibold text-gray-900">{p.event_name}</div>
                   <div className="text-xs text-gray-400 mt-0.5">{p.client?.name}</div>
                   {p.venue_name && (
-                    <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                    <div className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                       <MapPin size={11} />{p.venue_name}
                     </div>
                   )}
                   <span className={`inline-block mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                    p.stage === "confirmed" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
+                    p.stage === "confirmed" ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"
                   }`}>{p.stage?.replace("_", " ")}</span>
                 </div>
               ))}

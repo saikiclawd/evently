@@ -11,7 +11,7 @@ export default function AppLayout() {
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-dark-bg">
           <Outlet />
         </main>
       </div>

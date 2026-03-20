@@ -23,19 +23,19 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
-      className={`h-screen bg-dark-surface border-r border-dark-border flex flex-col transition-all duration-200 flex-shrink-0 ${
+      className={`h-screen bg-white border-r border-dark-border flex flex-col transition-all duration-200 flex-shrink-0 ${
         collapsed ? "w-16" : "w-56"
       }`}
     >
       {/* Logo */}
       <div className="h-16 flex items-center gap-2.5 px-4 border-b border-dark-border">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center flex-shrink-0">
           <Zap size={18} className="text-white" />
         </div>
         {!collapsed && (
           <div>
-            <div className="text-sm font-extrabold text-gray-100 tracking-tight">Evently</div>
-            <div className="text-[10px] font-semibold text-gray-500 tracking-widest">PRO</div>
+            <div className="text-sm font-extrabold text-gray-900 tracking-tight">Evently</div>
+            <div className="text-[10px] font-semibold text-gray-400 tracking-widest">PRO</div>
           </div>
         )}
       </div>
@@ -50,8 +50,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-accent/10 text-accent"
-                  : "text-gray-400 hover:bg-dark-card hover:text-gray-200"
+                  ? "bg-accent/8 text-accent"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
               } ${collapsed ? "justify-center px-0" : ""}`
             }
           >
@@ -64,13 +64,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       {/* Footer */}
       <div className="border-t border-dark-border p-2 space-y-1">
         {!collapsed && user && (
-          <div className="px-3 py-2 text-xs text-gray-500 truncate">
+          <div className="px-3 py-2 text-xs text-gray-400 truncate">
             {user.email}
           </div>
         )}
         <button
           onClick={logout}
-          className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-colors ${
+          className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors ${
             collapsed ? "justify-center px-0" : ""
           }`}
         >
@@ -79,7 +79,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-gray-500 hover:text-gray-300 transition-colors ${
+          className={`flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-700 transition-colors ${
             collapsed ? "justify-center px-0" : ""
           }`}
         >
