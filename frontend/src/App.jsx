@@ -42,7 +42,11 @@ function AppRoutes() {
   const { isAuthenticated, loadUser } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated) loadUser();
+    if (isAuthenticated) {
+      loadUser();
+    } else {
+      useAuthStore.setState({ isLoading: false });
+    }
   }, []); // eslint-disable-line
 
   return (
