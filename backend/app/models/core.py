@@ -4,7 +4,6 @@ Evently — Core Models: Company, User, Client
 import uuid
 from datetime import datetime, timezone
 from app.extensions import db
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy import String, Enum as PgEnum
 import enum
 
@@ -31,14 +30,14 @@ class UserRole(enum.Enum):
 class Company(db.Model):
     __tablename__ = "companies"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
     name = db.Column(db.String(200), nullable=False)
     logo_url = db.Column(db.String(500))
     website_url = db.Column(db.String(500))
     phone = db.Column(db.String(30))
     address = db.Column(db.Text)
     timezone = db.Column(db.String(50), default="UTC")
-    branding_config = db.Column(JSONB, default=dict)
+    branding_config = db.Column(db.JSON, default=dict)
     stripe_account_id = db.Column(db.String(100))
     quickbooks_realm_id = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -59,15 +58,15 @@ class Company(db.Model):
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
     name = db.Column(db.String(200), nullable=False)
     role = db.Column(PgEnum(UserRole, name="user_role"), default=UserRole.full)
     phone = db.Column(db.String(30))
     avatar_url = db.Column(db.String(500))
-    permissions = db.Column(JSONB, default=dict)
+    permissions = db.Column(db.JSON, default=dict)
     is_active = db.Column(db.Boolean, default=True)
     last_login = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -97,15 +96,15 @@ class User(db.Model):
 class Client(db.Model):
     __tablename__ = "clients"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(255), index=True)
     phone = db.Column(db.String(30))
     address = db.Column(db.Text)
-    tags = db.Column(ARRAY(db.String), default=list)
-    preferences = db.Column(JSONB, default=dict)
-    saved_terms = db.Column(JSONB, default=dict)
+    tags = db.Column(db.JSON, default=list)
+    preferences = db.Column(db.JSON, default=dict)
+    saved_terms = db.Column(db.JSON, default=dict)
     notes = db.Column(db.Text)
     total_spent = db.Column(db.Numeric(12, 2), default=0)
     event_count = db.Column(db.Integer, default=0)

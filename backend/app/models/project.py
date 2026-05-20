@@ -5,7 +5,6 @@ import enum
 import secrets
 from app.extensions import db
 from app.models.core import gen_uuid, utcnow
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 
 class ProjectStage(enum.Enum):
@@ -32,10 +31,10 @@ def gen_live_link_token():
 class Project(db.Model):
     __tablename__ = "projects"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False, index=True)
-    client_id = db.Column(UUID(as_uuid=False), db.ForeignKey("clients.id"), nullable=False, index=True)
-    created_by = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False, index=True)
+    client_id = db.Column(db.String(36), db.ForeignKey("clients.id"), nullable=False, index=True)
+    created_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
 
     project_number = db.Column(db.String(20), unique=True, default=gen_project_number)
     event_name = db.Column(db.String(300), nullable=False)
@@ -64,7 +63,7 @@ class Project(db.Model):
     amount_paid = db.Column(db.Numeric(12, 2), default=0)
 
     # Proposal settings
-    custom_terms = db.Column(JSONB, default=dict)
+    custom_terms = db.Column(db.JSON, default=dict)
     internal_notes = db.Column(db.Text)
     live_link_token = db.Column(db.String(64), unique=True, default=gen_live_link_token)
     quote_expires_at = db.Column(db.DateTime(timezone=True))
@@ -133,9 +132,9 @@ class Project(db.Model):
 class ProjectLineItem(db.Model):
     __tablename__ = "project_line_items"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
-    item_id = db.Column(UUID(as_uuid=False), db.ForeignKey("inventory_items.id"), nullable=True)  # null for custom
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    item_id = db.Column(db.String(36), db.ForeignKey("inventory_items.id"), nullable=True)  # null for custom
 
     name = db.Column(db.String(300), nullable=False)
     description = db.Column(db.Text)
@@ -145,9 +144,9 @@ class ProjectLineItem(db.Model):
     sort_order = db.Column(db.Integer, default=0)
 
     is_package = db.Column(db.Boolean, default=False)
-    package_id = db.Column(UUID(as_uuid=False), nullable=True)  # Group items in a package
+    package_id = db.Column(db.String(36), nullable=True)  # Group items in a package
     is_taxable = db.Column(db.Boolean, default=True)
-    custom_fields = db.Column(JSONB, default=dict)
+    custom_fields = db.Column(db.JSON, default=dict)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
 
@@ -163,13 +162,13 @@ class ProjectLineItem(db.Model):
 class Proposal(db.Model):
     __tablename__ = "proposals"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id", ondelete="CASCADE"),
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id", ondelete="CASCADE"),
                            nullable=False, unique=True)
 
     pdf_url = db.Column(db.String(500))
-    branding_override = db.Column(JSONB, default=dict)
-    payment_schedule_config = db.Column(JSONB, default=dict)  # deposit %, balance timing
+    branding_override = db.Column(db.JSON, default=dict)
+    payment_schedule_config = db.Column(db.JSON, default=dict)  # deposit %, balance timing
     signature_required = db.Column(db.Boolean, default=True)
     custom_message = db.Column(db.Text)
 
@@ -189,8 +188,8 @@ class Proposal(db.Model):
 class Signature(db.Model):
     __tablename__ = "signatures"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    proposal_id = db.Column(UUID(as_uuid=False), db.ForeignKey("proposals.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    proposal_id = db.Column(db.String(36), db.ForeignKey("proposals.id", ondelete="CASCADE"), nullable=False)
     signer_name = db.Column(db.String(200), nullable=False)
     signer_email = db.Column(db.String(255), nullable=False)
     signature_image_url = db.Column(db.String(500))
