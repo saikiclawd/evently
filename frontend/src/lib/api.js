@@ -117,6 +117,11 @@ export const activity = {
 
 // ── FloraFlow API ──
 export const flora = {
+  // AI Analyzer
+  analyzeImage: (formData) => api.post("/flora/ai/analyze-image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }),
+
   // Flowers
   flowers:       (params) => api.get("/flora/flowers", { params }),
   createFlower:  (data)   => api.post("/flora/flowers", data),

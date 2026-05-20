@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   BarChart3, Package, FileText, CreditCard, Truck, Users,
   Calendar, Globe, Zap, ChevronLeft, ChevronRight, PenTool, LogOut,
-  FlowerIcon, ClipboardList, ShoppingCart, BookOpen,
+  FlowerIcon, ClipboardList, ShoppingCart, BookOpen, Sparkles,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 
@@ -32,6 +32,7 @@ const navItems = [
 ];
 
 const floraItems = [
+  { to: "/flora/ai",      icon: Sparkles,       label: "AI Analyzer" },
   { to: "/flora/recipes", icon: BookOpen,       label: "Recipes" },
   { to: "/flora/events",  icon: Calendar,       label: "Events" },
   { to: "/flora/orders",  icon: ShoppingCart,   label: "Orders" },

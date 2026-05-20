@@ -2,6 +2,9 @@
 FloraFlow — API Routes
 All routes prefixed /api/v1/flora/
 """
+import os
+import json
+import base64
 from datetime import date, datetime, timedelta
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -815,3 +818,92 @@ def flora_dashboard():
         "upcoming_events": [e.to_dict() for e in upcoming],
         "recent_pos":      [po.to_dict() for po in recent_pos],
     })
+
+
+# ══════════════════════════════════════════════
+# AI STEM ANALYZER
+# ══════════════════════════════════════════════
+
+_GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+
+_ANALYZE_PROMPT = """You are an expert floral designer helping calculate stem orders.
+
+Carefully examine this floral image and identify every flower, foliage, and greenery type visible.
+
+Return ONLY valid JSON — no markdown fences, no explanation — in this exact shape:
+{
+  "arrangement_type": "centerpiece",
+  "total_stems_estimate": 45,
+  "flowers": [
+    {
+      "common_name": "Garden Rose",
+      "variety": "White Ohara",
+      "color": "White",
+      "estimated_stems": 12,
+      "confidence": "high"
+    }
+  ],
+  "notes": "Lush garden-style centerpiece with layered textures."
+}
+
+Rules:
+- arrangement_type: one of bouquet, centerpiece, arch, boutonniere, ceremony, installation, other
+- estimated_stems: count of individual stems (not flower heads in compound stems)
+- confidence: "high" (clearly identifiable), "medium" (likely), "low" (best guess)
+- Include foliage and greenery as separate line items
+- Be conservative — only count what you can see or reasonably infer
+- If you truly cannot identify a type, use "Unknown Flower" as common_name"""
+
+
+@api_v1_bp.route("/flora/ai/analyze-image", methods=["POST"])
+@jwt_required()
+def ai_analyze_image():
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return _err("GROQ_API_KEY is not set. Add it to your environment and restart.", 503)
+
+    if "image" not in request.files:
+        return _err("No image file provided. Send as multipart/form-data with field name 'image'.")
+
+    file = request.files["image"]
+    image_bytes = file.read()
+
+    if len(image_bytes) > 10 * 1024 * 1024:
+        return _err("Image too large — maximum size is 10 MB.")
+
+    mime = file.content_type or "image/jpeg"
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model=_GROQ_MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                    {"type": "text", "text": _ANALYZE_PROMPT},
+                ],
+            }],
+            temperature=0.1,
+            max_tokens=1024,
+        )
+
+        raw = response.choices[0].message.content.strip()
+
+        # Strip markdown code fences if the model wraps the output
+        if raw.startswith("```"):
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else raw
+            if raw.startswith("json"):
+                raw = raw[4:]
+
+        result = json.loads(raw.strip())
+        return jsonify(result)
+
+    except json.JSONDecodeError:
+        return _err("AI returned an unparseable response. Please try again.", 502)
+    except Exception as e:
+        return _err(f"Analysis failed: {str(e)}", 503)
