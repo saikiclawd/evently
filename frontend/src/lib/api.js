@@ -115,4 +115,57 @@ export const activity = {
   list: (params) => api.get("/activity", { params }),
 };
 
+// ── FloraFlow API ──
+export const flora = {
+  // Flowers
+  flowers:       (params) => api.get("/flora/flowers", { params }),
+  createFlower:  (data)   => api.post("/flora/flowers", data),
+  updateFlower:  (id, data) => api.put(`/flora/flowers/${id}`, data),
+  deleteFlower:  (id)     => api.delete(`/flora/flowers/${id}`),
+
+  // Vendors
+  vendors:       ()        => api.get("/flora/vendors"),
+  createVendor:  (data)    => api.post("/flora/vendors", data),
+  updateVendor:  (id, data) => api.put(`/flora/vendors/${id}`, data),
+  getVendor:     (id)      => api.get(`/flora/vendors/${id}`),
+  addVendorPref: (id, data) => api.post(`/flora/vendors/${id}/preferences`, data),
+  delVendorPref: (vid, pid) => api.delete(`/flora/vendors/${vid}/preferences/${pid}`),
+
+  // Recipes
+  recipes:          (params) => api.get("/flora/recipes", { params }),
+  getRecipe:        (id)     => api.get(`/flora/recipes/${id}`),
+  createRecipe:     (data)   => api.post("/flora/recipes", data),
+  updateRecipe:     (id, data) => api.put(`/flora/recipes/${id}`, data),
+  publishRecipe:    (id)     => api.post(`/flora/recipes/${id}/publish`),
+  duplicateRecipe:  (id)     => api.post(`/flora/recipes/${id}/duplicate`),
+  recipeVersions:   (id)     => api.get(`/flora/recipes/${id}/versions`),
+
+  // Events
+  events:           (params) => api.get("/flora/events", { params }),
+  getEvent:         (id)     => api.get(`/flora/events/${id}`),
+  createEvent:      (data)   => api.post("/flora/events", data),
+  updateEvent:      (id, data) => api.put(`/flora/events/${id}`, data),
+  confirmEvent:     (id)     => api.post(`/flora/events/${id}/confirm`),
+  stemSummary:      (id)     => api.get(`/flora/events/${id}/stem-summary`),
+  addArrangement:   (eid, data) => api.post(`/flora/events/${eid}/arrangements`, data),
+  updateArrangement:(eid, aid, data) => api.put(`/flora/events/${eid}/arrangements/${aid}`, data),
+  removeArrangement:(eid, aid) => api.delete(`/flora/events/${eid}/arrangements/${aid}`),
+  addPayment:       (eid, data) => api.post(`/flora/events/${eid}/payments`, data),
+  eventPayments:    (eid)    => api.get(`/flora/events/${eid}/payments`),
+
+  // Orders
+  orders:           (params) => api.get("/flora/orders", { params }),
+  getOrder:         (id)     => api.get(`/flora/orders/${id}`),
+  generatePO:       (eid)    => api.post(`/flora/events/${eid}/generate-po`),
+  sendOrder:        (id)     => api.post(`/flora/orders/${id}/send`),
+  updateOrder:      (id, data) => api.put(`/flora/orders/${id}`, data),
+
+  // Inventory
+  inventory:        ()       => api.get("/flora/inventory"),
+  adjustInventory:  (data)   => api.post("/flora/inventory/adjust", data),
+
+  // Dashboard
+  dashboard:        ()       => api.get("/flora/dashboard"),
+};
+
 export default api;

@@ -71,8 +71,19 @@ class TestingConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 
+class LocalConfig(BaseConfig):
+    """SQLite-based config for local FloraFlow development — no PostgreSQL or Redis needed."""
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///floraflow_local.db"
+    SQLALCHEMY_ENGINE_OPTIONS = {}  # SQLite doesn't use connection pooling
+    CACHE_TYPE = "SimpleCache"
+    CACHE_REDIS_URL = None
+    CORS_ORIGINS = "http://localhost:5173"
+
+
 config_by_name = {
     "development": DevelopmentConfig,
-    "production": ProductionConfig,
-    "testing": TestingConfig,
+    "production":  ProductionConfig,
+    "testing":     TestingConfig,
+    "local":       LocalConfig,
 }

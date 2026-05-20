@@ -14,6 +14,15 @@ export default {
           DEFAULT: "#2563EB",
           dim: "#DBEAFE",
         },
+        flora: {
+          gold:     "#B8860B",
+          "gold-lt":"#F5EDD2",
+          rose:     "#9B5E6A",
+          "rose-lt":"#F5E6E9",
+          sage:     "#5E7E6A",
+          "sage-lt":"#E2EDE5",
+          cream:    "#FDFAF6",
+        },
       },
       fontFamily: {
         sans: ["DM Sans", "system-ui", "sans-serif"],
