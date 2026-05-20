@@ -64,9 +64,17 @@ def bootstrap_pip():
     print("  pip installed.")
 
 
+def venv_has_pip():
+    r = subprocess.run(
+        f'"{VENV_PYTHON}" -m pip --version',
+        shell=True, capture_output=True
+    )
+    return r.returncode == 0
+
+
 def ensure_venv():
     """Create .venv if it doesn't exist, then install deps into it."""
-    if not os.path.isfile(VENV_PYTHON):
+    if not os.path.isfile(VENV_PYTHON) or not venv_has_pip():
         # Clean up any partial venv from a previous failed attempt
         if os.path.isdir(VENV):
             shutil.rmtree(VENV)
