@@ -18,6 +18,7 @@ import os
 import sys
 import subprocess
 import shutil
+import urllib.request
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BACKEND = os.path.join(ROOT, "backend")
@@ -48,14 +49,41 @@ def sh(cmd, cwd=None):
         sys.exit(result.returncode)
 
 
+def bootstrap_pip():
+    """Download get-pip.py and install pip into the venv."""
+    get_pip = os.path.join(ROOT, ".get-pip.py")
+    banner("Bootstrapping pip (Homebrew ensurepip workaround)...")
+    try:
+        urllib.request.urlretrieve("https://bootstrap.pypa.io/get-pip.py", get_pip)
+    except Exception as e:
+        print(f"  Could not download get-pip.py: {e}")
+        print("  Check your internet connection and try again.")
+        sys.exit(1)
+    sh(f'"{VENV_PYTHON}" "{get_pip}" -q')
+    os.remove(get_pip)
+    print("  pip installed.")
+
+
 def ensure_venv():
     """Create .venv if it doesn't exist, then install deps into it."""
     if not os.path.isfile(VENV_PYTHON):
-        banner("Creating virtual environment (.venv)...")
-        sh(f'"{sys.executable}" -m venv "{VENV}"')
-        print("  Done.")
+        # Clean up any partial venv from a previous failed attempt
+        if os.path.isdir(VENV):
+            shutil.rmtree(VENV)
 
-    banner("Installing Python dependencies into .venv...")
+        banner("Creating virtual environment (.venv)...")
+        result = subprocess.run(
+            f'"{sys.executable}" -m venv "{VENV}"', shell=True
+        )
+        if result.returncode != 0:
+            # Homebrew Python sometimes ships without a working ensurepip.
+            # Create without pip, then bootstrap it manually.
+            shutil.rmtree(VENV, ignore_errors=True)
+            sh(f'"{sys.executable}" -m venv --without-pip "{VENV}"')
+            bootstrap_pip()
+        print("  Virtual environment ready.")
+
+    banner("Installing Python dependencies...")
     sh(f'"{VENV_PYTHON}" -m pip install -r "{REQ}" -q --upgrade')
     print("  Done.")
 
