@@ -101,11 +101,19 @@ def check_tools():
     if v < (3, 10):
         print("  Python 3.10 or newer is required.")
         sys.exit(1)
-    if v >= (3, 14):
-        print(f"  Python {v.major}.{v.minor} is pre-release and has known macOS issues.")
-        print("  Please run with Python 3.12 or 3.13:")
-        print("    brew install python@3.13")
-        print("    python3.13 start.py")
+
+    # Homebrew Python 3.13+ on macOS has a libexpat mismatch that breaks pip.
+    # The official python.org installer bundles its own libraries and works correctly.
+    try:
+        import xml.parsers.expat  # noqa — probe for the broken symbol
+    except ImportError:
+        print(f"\n  Python {v.major}.{v.minor} from Homebrew has a macOS libexpat")
+        print("  compatibility issue that breaks pip and venv.")
+        print()
+        print("  Fix: install the official Python 3.12 from python.org:")
+        print("    https://www.python.org/ftp/python/3.12.9/python-3.12.9-macos11.pkg")
+        print()
+        print("  Then run:  rm -rf .venv && python3.12 start.py")
         sys.exit(1)
 
     if not DEV_MODE:
