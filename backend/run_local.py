@@ -149,13 +149,20 @@ def seed_data():
 
 if __name__ == "__main__":
     with app.app_context():
-        # Import all models so SQLAlchemy knows about them
-        from app.models import core, flora  # noqa
+        from app.models import core, flora  # noqa — register all models before create_all
         db.create_all()
-        print("✓ Database tables created (floraflow_local.db)")
+        print("✓ Database ready (floraflow_local.db)")
         seed_data()
 
-    print("\n🌸 FloraFlow local server starting...")
-    print("   API:      http://localhost:5001/api/v1")
-    print("   Frontend: http://localhost:5173 (run: cd frontend && npm run dev)\n")
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    serve_static = os.environ.get("SERVE_STATIC") == "1"
+    print("\n  FloraFlow — local server starting")
+    if serve_static:
+        print("  Mode:     monolithic (Flask serves API + React UI)")
+        print("  Open:     http://localhost:5001\n")
+    else:
+        print("  Mode:     API only (dev mode)")
+        print("  API:      http://localhost:5001/api/v1")
+        print("  UI:       run 'npm run dev' inside frontend/ in another terminal")
+        print("  UI URL:   http://localhost:5173\n")
+
+    app.run(host="0.0.0.0", port=5001, debug=not serve_static, use_reloader=not serve_static)

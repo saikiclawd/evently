@@ -78,7 +78,8 @@ class LocalConfig(BaseConfig):
     SQLALCHEMY_ENGINE_OPTIONS = {}  # SQLite doesn't use connection pooling
     CACHE_TYPE = "SimpleCache"
     CACHE_REDIS_URL = None
-    CORS_ORIGINS = "http://localhost:5173"
+    # Dev mode origins (Vite dev server); ignored when serving as monolith (same origin)
+    CORS_ORIGINS = ["http://localhost:5173", "http://localhost:5001"]
 
 
 config_by_name = {
