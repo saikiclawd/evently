@@ -881,7 +881,7 @@
       box-shadow: var(--shadow-sm);
       position: relative;
     }
-    .step-num {
+    .onboard-num {
       width: 32px; height: 32px;
       border-radius: 50%;
       background: var(--gold);
@@ -939,6 +939,14 @@
       .ai-io { grid-template-columns: 1fr; }
       .po-row { grid-template-columns: 2fr 1fr; }
       .po-row .po-bunch, .po-row.head .po-bunch { display: none; }
+
+      /* Recommendations section */
+      .rec-grid        { grid-template-columns: 1fr; }
+      .buffer-matrix   { grid-template-columns: repeat(2, 1fr); }
+      .comp-grid       { grid-template-columns: 1fr 1fr !important; }
+      .onboard-steps   { grid-template-columns: 1fr; }
+      .pricing-table   { font-size: 0.78rem; }
+      .pricing-table td, .pricing-table th { padding: 9px 10px; }
     }
   </style>
 </head>
@@ -947,7 +955,7 @@
 <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
 <header class="hero">
   <div class="page-wrap">
-    <span class="hero-eyebrow">Luxel Decor & Flowers · FloraFlow PRD v1.0</span>
+    <span class="hero-eyebrow">Luxel Decor & Flowers · FloraFlow PRD v2.0</span>
     <h1><em>FloraFlow</em> — Floral<br/>Intelligence Platform</h1>
     <p class="hero-sub">
       A cloud-based SaaS platform that replaces error-prone spreadsheets with
@@ -1903,7 +1911,7 @@
 <!-- ═══════════════════════════ 12. REPORTING ═══════════════════════════ -->
 <section id="reporting">
   <div class="page-wrap">
-    <span class="section-label">Section 14 — Reporting & Analytics</span>
+    <span class="section-label">Section 16 — Reporting & Analytics</span>
     <h2>Ten built-in reports</h2>
     <div class="divider"></div>
     <div class="report-grid">
@@ -2364,22 +2372,22 @@
     <p style="font-size:0.88rem;color:var(--muted);margin-bottom:24px;">A structured onboarding wizard gets a new studio fully operational in a single session — critical for reducing churn in the first 7 days.</p>
     <div class="onboard-steps">
       <div class="onboard-step">
-        <div class="step-num">1</div>
+        <div class="onboard-num">1</div>
         <h4>Studio Setup</h4>
         <p>Name, logo, currency, timezone, global buffer default, PO email template.</p>
       </div>
       <div class="onboard-step">
-        <div class="step-num">2</div>
+        <div class="onboard-num">2</div>
         <h4>Flower Catalog Import</h4>
         <p>CSV upload or one-click activation of 50 pre-loaded wedding flowers. Required columns: <code>common_name</code>, <code>variety</code>, <code>cost_per_stem</code>, <code>bunch_size</code>.</p>
       </div>
       <div class="onboard-step">
-        <div class="step-num">3</div>
+        <div class="onboard-num">3</div>
         <h4>Vendor Setup</h4>
         <p>Add vendors with name, email, lead days. Assign preferred flowers to populate the Vendor-Flower Preference Matrix.</p>
       </div>
       <div class="onboard-step">
-        <div class="step-num">4</div>
+        <div class="onboard-num">4</div>
         <h4>First Recipe</h4>
         <p>Guided creation: name + category → stem line items → cost preview → publish. System shows live stem total and cost/unit as you build.</p>
       </div>
@@ -2433,7 +2441,7 @@
 </main>
 
 <footer>
-  <strong>FloraFlow</strong> · Floral Intelligence Platform · Confidential PRD v1.0 · Luxel Decor &amp; Flowers · May 2026
+  <strong>FloraFlow</strong> · Floral Intelligence Platform · Confidential PRD v2.0 · Luxel Decor &amp; Flowers · May 2026
 </footer>
 
 </body>
