@@ -61,8 +61,15 @@ def ensure_venv():
 
 
 def check_tools():
-    if sys.version_info < (3, 10):
+    v = sys.version_info
+    if v < (3, 10):
         print("  Python 3.10 or newer is required.")
+        sys.exit(1)
+    if v >= (3, 14):
+        print(f"  Python {v.major}.{v.minor} is pre-release and has known macOS issues.")
+        print("  Please run with Python 3.12 or 3.13:")
+        print("    brew install python@3.13")
+        print("    python3.13 start.py")
         sys.exit(1)
 
     if not DEV_MODE:
