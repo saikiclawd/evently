@@ -119,10 +119,10 @@ log "Automatic security updates enabled"
 # ══════════════════════════════════════════
 info "Phase 2: Installing Python 3.12..."
 
-add-apt-repository -y ppa:deadsnakes/ppa
-apt-get update
-apt-get install -y python3.12 python3.12-venv python3.12-dev python3.12-distutils
-# pip for 3.12
+# Ubuntu 24.04 ships Python 3.12 natively — deadsnakes not needed.
+# python3.12-distutils was removed in Python 3.12 (distutils merged into setuptools).
+apt-get install -y python3.12 python3.12-venv python3.12-dev
+# Bootstrap pip for the system python3.12 (not installed by default)
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
 log "Python 3.12 installed ($(python3.12 --version))"
 
