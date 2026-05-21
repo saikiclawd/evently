@@ -875,23 +875,29 @@ def ai_analyze_image():
     b64 = base64.b64encode(image_bytes).decode("utf-8")
 
     try:
-        from groq import Groq
-        client = Groq(api_key=api_key)
-
-        response = client.chat.completions.create(
-            model=_GROQ_MODEL,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-                    {"type": "text", "text": _ANALYZE_PROMPT},
-                ],
-            }],
-            temperature=0.1,
-            max_tokens=1024,
+        import requests as _requests
+        resp = _requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": _GROQ_MODEL,
+                "messages": [{
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                        {"type": "text", "text": _ANALYZE_PROMPT},
+                    ],
+                }],
+                "temperature": 0.1,
+                "max_tokens": 1024,
+            },
+            timeout=30,
         )
-
-        raw = response.choices[0].message.content.strip()
+        resp.raise_for_status()
+        raw = resp.json()["choices"][0]["message"]["content"].strip()
 
         # Strip markdown code fences if the model wraps the output
         if raw.startswith("```"):
