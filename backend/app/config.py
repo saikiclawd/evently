@@ -60,10 +60,30 @@ class DevelopmentConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
-    # Stricter security in production
+
+    # PostgreSQL on same host (set DATABASE_URL in .env)
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+        "max_overflow": 5,
+    }
+
+    # No Redis — use simple in-process cache for production monolith
+    CACHE_TYPE = "SimpleCache"
+    CACHE_REDIS_URL = None
+
+    # Monolith: Flask serves React dist/ when SERVE_STATIC=1 (set in .env)
+    SERVE_STATIC = os.getenv("SERVE_STATIC", "1") == "1"
+
+    # Cookie security
     JWT_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
+
+    # CORS — same origin in production (nginx handles everything on one domain)
+    CORS_ORIGINS = os.getenv("FRONTEND_URL", "")
 
 
 class TestingConfig(BaseConfig):

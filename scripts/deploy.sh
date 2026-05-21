@@ -1,94 +1,88 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════
-# Evently — Manual Deployment Script
+# FloraFlow — Deploy Script
 # ═══════════════════════════════════════════
+# Run as the deploy user on the Linode.
 # Usage: bash scripts/deploy.sh [--no-migrate] [--restart-only]
 
 set -euo pipefail
 
 APP_DIR="/opt/evently"
-COMPOSE="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
+VENV="${APP_DIR}/.venv"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 log()  { echo -e "${GREEN}[$(date '+%H:%M:%S')]${NC} $1"; }
 warn() { echo -e "${YELLOW}[$(date '+%H:%M:%S')]${NC} $1"; }
+err()  { echo -e "${RED}[$(date '+%H:%M:%S')]${NC} $1"; exit 1; }
 
 SKIP_MIGRATE=false
 RESTART_ONLY=false
 
 for arg in "$@"; do
     case $arg in
-        --no-migrate)  SKIP_MIGRATE=true ;;
+        --no-migrate)   SKIP_MIGRATE=true ;;
         --restart-only) RESTART_ONLY=true ;;
     esac
 done
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "  Evently — Deploying..."
+echo "  FloraFlow — Deploying"
 echo "═══════════════════════════════════════════"
 echo ""
 
 cd "$APP_DIR"
 
 if [ "$RESTART_ONLY" = false ]; then
-    # Pull latest code
+    # ── Pull latest code ──
     log "Pulling latest code..."
-    git pull origin main
+    git fetch origin main
+    git reset --hard origin/main
+    log "Code updated ($(git rev-parse --short HEAD))"
 
-    # Build images
-    log "Building Docker images..."
-    $COMPOSE build --parallel
+    # ── Update Python dependencies ──
+    log "Installing Python dependencies..."
+    "$VENV/bin/pip" install --quiet --upgrade pip
+    "$VENV/bin/pip" install --quiet -r backend/requirements.txt
+    log "Python deps up to date"
+
+    # ── Build React frontend ──
+    log "Building frontend..."
+    cd "$APP_DIR/frontend"
+    npm ci --prefer-offline --silent
+    npm run build
+    cd "$APP_DIR"
+    log "Frontend built"
 fi
 
-# Database migration
+# ── Database migrations ──
 if [ "$SKIP_MIGRATE" = false ]; then
     log "Running database migrations..."
-    $COMPOSE run --rm api flask db upgrade
+    set -a; source "$APP_DIR/.env"; set +a
+    FLASK_APP=backend/app:create_app "$VENV/bin/flask" db upgrade
+    log "Migrations applied"
 fi
 
-# Rolling restart: API instances
-log "Restarting API instance 1..."
-$COMPOSE up -d --no-deps --force-recreate api
-sleep 8
-
-# Health check API 1
-if curl -sf http://localhost:8500/api/v1/health > /dev/null; then
-    log "API instance 1 healthy ✓"
+# ── Reload gunicorn (zero-downtime) ──
+log "Reloading gunicorn..."
+if systemctl is-active --quiet floraflow; then
+    # SIGHUP causes gunicorn to reload workers without dropping connections
+    systemctl kill -s HUP floraflow
+    sleep 3
 else
-    warn "API instance 1 health check failed — continuing..."
+    systemctl start floraflow
+    sleep 3
 fi
 
-log "Restarting API instance 2..."
-$COMPOSE up -d --no-deps --force-recreate api-2
-sleep 5
-
-# Restart remaining services
-log "Restarting workers and frontend..."
-$COMPOSE up -d --remove-orphans
-
-# Cleanup
-log "Cleaning up old images..."
-docker image prune -f > /dev/null 2>&1
-
-# Final health check
-sleep 5
+# ── Health check ──
 echo ""
-if curl -sf http://localhost:8500/api/v1/health > /dev/null; then
-    log "API: ✅ Healthy"
+if curl -sf http://127.0.0.1:5001/api/v1/health > /dev/null 2>&1; then
+    log "Health check: ✅ OK"
 else
-    warn "API: ⚠️  Not responding"
-fi
-
-if curl -sf http://localhost:8600/ > /dev/null; then
-    log "Frontend: ✅ Healthy"
-else
-    warn "Frontend: ⚠️  Not responding"
+    warn "Health check: ⚠️  /api/v1/health not responding (app may still be warming up)"
 fi
 
 echo ""
-log "Deployment complete!"
+log "Deploy complete — $(git rev-parse --short HEAD)"
 echo ""
-
-# Show running containers
-$COMPOSE ps
+systemctl status floraflow --no-pager --lines=5
