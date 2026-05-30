@@ -4,7 +4,6 @@ Evently — Dispatch & Operations Models
 import enum
 from app.extensions import db
 from app.models.core import gen_uuid, utcnow
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 
 class RouteStatus(enum.Enum):
@@ -57,8 +56,8 @@ class MessageChannel(enum.Enum):
 class Vehicle(db.Model):
     __tablename__ = "vehicles"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     vehicle_type = db.Column(db.String(50))  # truck, van, trailer
     license_plate = db.Column(db.String(20))
@@ -75,9 +74,9 @@ class Vehicle(db.Model):
 class Route(db.Model):
     __tablename__ = "routes"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False, index=True)
-    vehicle_id = db.Column(UUID(as_uuid=False), db.ForeignKey("vehicles.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False, index=True)
+    vehicle_id = db.Column(db.String(36), db.ForeignKey("vehicles.id"), nullable=True)
 
     route_date = db.Column(db.Date, nullable=False, index=True)
     status = db.Column(db.Enum(RouteStatus, name="route_status"), default=RouteStatus.planned)
@@ -85,7 +84,7 @@ class Route(db.Model):
     total_stops = db.Column(db.Integer, default=0)
     total_drive_minutes = db.Column(db.Integer, default=0)
     total_distance_miles = db.Column(db.Float, default=0)
-    optimized_order = db.Column(JSONB, default=list)
+    optimized_order = db.Column(db.JSON, default=list)
 
     # Default dispatch settings
     warehouse_start_time = db.Column(db.Time)
@@ -107,9 +106,9 @@ class Route(db.Model):
 class RouteStop(db.Model):
     __tablename__ = "route_stops"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    route_id = db.Column(UUID(as_uuid=False), db.ForeignKey("routes.id", ondelete="CASCADE"), nullable=False)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    route_id = db.Column(db.String(36), db.ForeignKey("routes.id", ondelete="CASCADE"), nullable=False)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=True)
 
     stop_order = db.Column(db.Integer, nullable=False, default=0)
     stop_type = db.Column(db.Enum(StopType, name="stop_type"), nullable=False)
@@ -138,9 +137,9 @@ class RouteStop(db.Model):
 class RouteAssignment(db.Model):
     __tablename__ = "route_assignments"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    route_id = db.Column(UUID(as_uuid=False), db.ForeignKey("routes.id", ondelete="CASCADE"), nullable=False)
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    route_id = db.Column(db.String(36), db.ForeignKey("routes.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
     role = db.Column(db.Enum(CrewRole, name="crew_role"), nullable=False)
     notified = db.Column(db.Boolean, default=False)
     notified_at = db.Column(db.DateTime(timezone=True))
@@ -151,13 +150,13 @@ class RouteAssignment(db.Model):
 class PullSheet(db.Model):
     __tablename__ = "pull_sheets"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     status = db.Column(db.Enum(PullSheetStatus, name="pull_sheet_status"), default=PullSheetStatus.pending)
-    items_checklist = db.Column(JSONB, default=list)
+    items_checklist = db.Column(db.JSON, default=list)
     pdf_url = db.Column(db.String(500))
     xlsx_url = db.Column(db.String(500))
-    completed_by = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=True)
+    completed_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
     completed_at = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
 
@@ -167,16 +166,16 @@ class PullSheet(db.Model):
 class Message(db.Model):
     __tablename__ = "messages"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=True)
-    client_id = db.Column(UUID(as_uuid=False), db.ForeignKey("clients.id"), nullable=False)
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=True)
+    client_id = db.Column(db.String(36), db.ForeignKey("clients.id"), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
 
     direction = db.Column(db.Enum(MessageDirection, name="message_direction"), nullable=False)
     channel = db.Column(db.Enum(MessageChannel, name="message_channel"), default=MessageChannel.email)
     subject = db.Column(db.String(500))
     body = db.Column(db.Text, nullable=False)
-    attachments = db.Column(JSONB, default=list)
+    attachments = db.Column(db.JSON, default=list)
 
     is_read = db.Column(db.Boolean, default=False)
     sent_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -191,8 +190,8 @@ class Message(db.Model):
 class EmailTemplate(db.Model):
     __tablename__ = "email_templates"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     subject_template = db.Column(db.String(500), nullable=False)
     body_template = db.Column(db.Text, nullable=False)
@@ -206,15 +205,15 @@ class EmailTemplate(db.Model):
 class ActivityLog(db.Model):
     __tablename__ = "activity_logs"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=True)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=True)
 
     entity_type = db.Column(db.String(50), nullable=False)  # project, inventory, payment, etc.
-    entity_id = db.Column(UUID(as_uuid=False), nullable=False)
+    entity_id = db.Column(db.String(36), nullable=False)
     action = db.Column(db.String(100), nullable=False)  # created, updated, stage_changed, etc.
-    changes = db.Column(JSONB, default=dict)
+    changes = db.Column(db.JSON, default=dict)
     ip_address = db.Column(db.String(45))
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, index=True)
@@ -229,8 +228,8 @@ class ActivityLog(db.Model):
 class WebsiteWishlist(db.Model):
     __tablename__ = "website_wishlists"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
 
     visitor_name = db.Column(db.String(200), nullable=False)
     visitor_email = db.Column(db.String(255), nullable=False)
@@ -240,8 +239,8 @@ class WebsiteWishlist(db.Model):
     venue = db.Column(db.String(300))
     notes = db.Column(db.Text)
 
-    items = db.Column(JSONB, default=list)  # [{item_id, quantity}]
+    items = db.Column(db.JSON, default=list)  # [{item_id, quantity}]
     status = db.Column(db.String(20), default="new")  # new, reviewed, converted, rejected
-    converted_project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=True)
+    converted_project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=True)
 
     submitted_at = db.Column(db.DateTime(timezone=True), default=utcnow)

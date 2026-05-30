@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Floral AI Stem Calculator — Brainstorm</title>
+  <style>
+    :root {
+      --blush:    #f4c6c6;
+      --rose:     #c0717b;
+      --sage:     #8fad8c;
+      --sage-lt:  #d4e7d2;
+      --cream:    #fdf8f2;
+      --bark:     #5c3d2e;
+      --gold:     #c9a84c;
+      --ink:      #2b2b2b;
+      --muted:    #7a7a7a;
+      --card-bg:  #ffffff;
+      --border:   #e8ddd5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--blush) 0%, var(--sage-lt) 100%);
+      padding: 60px 40px 50px;
+      text-align: center;
+      border-bottom: 3px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '🌸 🌿 🌹 🌾 🌷 🌿 🌸';
+      position: absolute;
+      top: 12px; left: 0; right: 0;
+      font-size: 1.4rem;
+      letter-spacing: 16px;
+      opacity: 0.35;
+    }
+    header h1 {
+      font-size: 2.6rem;
+      color: var(--bark);
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    header p.subtitle {
+      font-size: 1.1rem;
+      color: var(--rose);
+      font-style: italic;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 18px;
+      background: var(--rose);
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    section {
+      margin-bottom: 56px;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      color: var(--bark);
+      border-left: 5px solid var(--rose);
+      padding-left: 14px;
+      margin-bottom: 24px;
+    }
+    h3 {
+      font-size: 1.1rem;
+      color: var(--rose);
+      margin-bottom: 8px;
+      font-family: sans-serif;
+      font-weight: 700;
+    }
+
+    /* ── Cards grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .card p {
+      font-size: 0.93rem;
+      color: var(--muted);
+      font-family: sans-serif;
+    }
+    .card ul {
+      margin-top: 10px;
+      padding-left: 18px;
+      font-size: 0.9rem;
+      color: var(--ink);
+      font-family: sans-serif;
+    }
+    .card ul li { margin-bottom: 4px; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      margin-top: 8px;
+    }
+    .flow-step {
+      background: var(--card-bg);
+      border: 2px solid var(--blush);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-family: sans-serif;
+      font-size: 0.88rem;
+      text-align: center;
+      min-width: 130px;
+      flex: 1;
+    }
+    .flow-step strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--bark);
+      margin-bottom: 4px;
+    }
+    .flow-arrow {
+      font-size: 1.4rem;
+      color: var(--rose);
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 680px) {
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: sans-serif;
+      font-size: 0.9rem;
+    }
+    thead tr {
+      background: var(--blush);
+      color: var(--bark);
+    }
+    th, td {
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    tbody tr:nth-child(even) { background: var(--sage-lt); }
+    td code {
+      background: #f0ebe4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    /* ── Colour-coded tags ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tag {
+      font-family: sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .tag-rose   { background: #fce8e8; color: var(--rose); }
+    .tag-sage   { background: var(--sage-lt); color: #3d6b3a; }
+    .tag-gold   { background: #fdf3dc; color: #8a6a1f; }
+    .tag-bark   { background: #ede0d8; color: var(--bark); }
+
+    /* ── Callout box ── */
+    .callout {
+      background: linear-gradient(135deg, #fff8f0, #fdf3dc);
+      border-left: 5px solid var(--gold);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: sans-serif;
+      font-size: 0.92rem;
+      margin-top: 20px;
+    }
+    .callout strong { color: var(--bark); }
+
+    /* ── Screen mockup ── */
+    .mockup {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 24px auto 0;
+    }
+    .mockup-bar {
+      background: linear-gradient(to right, var(--blush), var(--sage-lt));
+      padding: 12px 20px;
+      font-family: sans-serif;
+      font-size: 0.82rem;
+      color: var(--bark);
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #e06c75; }
+    .dot-y { background: #e5c07b; }
+    .dot-g { background: #98c379; }
+    .mockup-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .mockup-panel {
+      padding: 24px;
+      font-family: sans-serif;
+      font-size: 0.85rem;
+    }
+    .mockup-panel:first-child { border-right: 1px solid var(--border); }
+    .upload-zone {
+      border: 2px dashed var(--blush);
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .upload-zone .big { font-size: 2rem; }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-row .flower { font-weight: 700; color: var(--bark); }
+    .result-row .count  { color: var(--rose); font-weight: 700; }
+    .total-row {
+      margin-top: 12px;
+      background: var(--blush);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      color: var(--bark);
+    }
+
+    /* ── Priority table colours ── */
+    .p-high   { color: #c0392b; font-weight: 700; }
+    .p-med    { color: #d68910; font-weight: 700; }
+    .p-low    { color: #27ae60; font-weight: 700; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-family: sans-serif;
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding: 30px 20px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ HEADER ═══════════════════════════════════════ -->
+<header>
+  <h1>Floral AI Stem Calculator</h1>
+  <p class="subtitle">
+    An AI-powered wedding floral tool that reads bouquet photos, centerpiece images,
+    and Pinterest boards to produce accurate stem counts, budgets, and sourcing lists.
+  </p>
+  <span class="badge">Brainstorm &amp; Concept Document</span>
+</header>
+
+<main>
+
+  <!-- ═══════ 1. PROBLEM ═══════ -->
+  <section>
+    <h2>1. The Problem We're Solving</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3>Manual Counting Is Error-Prone</h3>
+        <p>Florists spend hours manually estimating stems from inspiration images, often over- or under-ordering by 20–40%, leading to waste or last-minute scrambles.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💸</div>
+        <h3>Brides Lack Transparency</h3>
+        <p>Couples receive a single total quote with little visibility into individual flower costs. They can't easily swap varieties to hit a budget target.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🖼️</div>
+        <h3>Pinterest Boards Are Ambiguous</h3>
+        <p>Inspiration images mix styles, seasons, and sizes. Translating them into a real shopping list is a professional skill most couples don't have.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <h3>Seasonality &amp; Availability</h3>
+        <p>Certain blooms peak at specific times of year and vary wildly in cost. Brides rarely know which flowers in their inspiration are out of season.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 2. CORE USER FLOW ═══════ -->
+  <section>
+    <h2>2. Core User Flow</h2>
+    <div class="flow">
+      <div class="flow-step">
+        <strong>📷 Upload Image</strong>
+        Bouquet, centerpiece, or Pinterest board screenshot
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <strong>🤖 AI Analysis</strong>
+        Vision model detects &amp; classifies each flower type
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <strong>🔢 Stem Count</strong>
+        Estimates quantity per variety + foliage + filler
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <strong>🌍 Scale to Event</strong>
+        User inputs guest tables, bridal party size, ceremony setup
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <strong>📊 Output Report</strong>
+        Full stem list, budget range, seasonal notes &amp; substitutions
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 3. IMAGE INPUT TYPES ═══════ -->
+  <section>
+    <h2>3. Image Input Types &amp; How AI Handles Each</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">💐</div>
+        <h3>Bridal Bouquet</h3>
+        <p>Single arrangement, tightly framed. AI focuses on:</p>
+        <ul>
+          <li>Focal flowers (roses, peonies, dahlias)</li>
+          <li>Secondary blooms (ranunculus, lisianthus)</li>
+          <li>Filler (baby's breath, wax flower)</li>
+          <li>Greenery (eucalyptus, Italian ruscus)</li>
+          <li>Rough stem count per group based on density</li>
+        </ul>
+        <div class="tags">
+          <span class="tag tag-rose">High Accuracy</span>
+          <span class="tag tag-sage">Single Image</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🕯️</div>
+        <h3>Centerpiece / Table Arrangement</h3>
+        <p>Variable complexity: low garden clusters or tall statement pieces. AI handles:</p>
+        <ul>
+          <li>Silhouette type detection (low/high/cascade)</li>
+          <li>Vessel size estimation from context cues</li>
+          <li>Stem density inference per tier</li>
+          <li>Repetition scaling: × number of guest tables</li>
+        </ul>
+        <div class="tags">
+          <span class="tag tag-gold">Medium Accuracy</span>
+          <span class="tag tag-bark">Scales by Table Count</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📌</div>
+        <h3>Pinterest Board / Collage</h3>
+        <p>Multi-image grid with mixed styles. AI processes:</p>
+        <ul>
+          <li>Each pin individually, then merges results</li>
+          <li>Detects dominant colour palette &amp; aesthetic</li>
+          <li>Flags style conflicts (e.g., rustic vs modern)</li>
+          <li>Builds a "mood-weighted" stem list from all pins</li>
+          <li>Outputs a unified shopping list with variance ranges</li>
+        </ul>
+        <div class="tags">
+          <span class="tag tag-rose">Complex Input</span>
+          <span class="tag tag-gold">Aggregated Output</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏛️</div>
+        <h3>Ceremony Installation</h3>
+        <p>Arches, aisles, altar pieces, chuppah. AI uses:</p>
+        <ul>
+          <li>Scale inference (door frame, human reference)</li>
+          <li>Coverage area estimation in sq ft</li>
+          <li>Stem-per-sq-ft density lookup by style</li>
+          <li>Installation type templates (A-frame, circle, half-moon)</li>
+        </ul>
+        <div class="tags">
+          <span class="tag tag-sage">Scale-Dependent</span>
+          <span class="tag tag-bark">Template Assist</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 4. UI MOCKUP ═══════ -->
+  <section>
+    <h2>4. UI Concept — Main Calculator Screen</h2>
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        Floral Stem Calculator · Wedding Planner
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-panel">
+          <strong style="color:var(--bark);display:block;margin-bottom:12px;">Upload Inspiration</strong>
+          <div class="upload-zone">
+            <div class="big">🌸</div>
+            <div style="margin-top:8px;">Drop bouquet, centerpiece<br/>or Pinterest screenshot</div>
+            <div style="margin-top:10px;font-size:0.75rem;">JPG · PNG · WebP · PDF</div>
+          </div>
+          <div style="margin-top:14px;">
+            <strong style="color:var(--bark);font-size:0.85rem;">Event Details</strong>
+            <div style="margin-top:10px;font-size:0.82rem;color:var(--muted);">Guest tables: <strong>12</strong></div>
+            <div style="font-size:0.82rem;color:var(--muted);">Bridal party: <strong>6</strong></div>
+            <div style="font-size:0.82rem;color:var(--muted);">Wedding date: <strong>June 14</strong></div>
+            <div style="font-size:0.82rem;color:var(--muted);">Ceremony arch: <strong>Yes</strong></div>
+          </div>
+        </div>
+        <div class="mockup-panel">
+          <strong style="color:var(--bark);display:block;margin-bottom:12px;">AI Stem Estimate</strong>
+          <div class="result-row"><span class="flower">Garden Rose</span><span class="count">48 stems</span></div>
+          <div class="result-row"><span class="flower">Peony</span><span class="count">36 stems</span></div>
+          <div class="result-row"><span class="flower">Ranunculus</span><span class="count">72 stems</span></div>
+          <div class="result-row"><span class="flower">Eucalyptus</span><span class="count">24 bunches</span></div>
+          <div class="result-row"><span class="flower">Baby's Breath</span><span class="count">18 bunches</span></div>
+          <div class="result-row"><span class="flower">Lisianthus</span><span class="count">30 stems</span></div>
+          <div class="total-row">
+            <span>Total Stems</span><span>228 + greenery</span>
+          </div>
+          <div style="margin-top:14px;font-size:0.8rem;color:var(--muted);">
+            💰 Estimated budget: <strong style="color:var(--bark);">$1,200 – $1,650</strong><br/>
+            ⚠️ Peonies peak in May–Jun. In season for your date.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 5. AI MODEL STRATEGY ═══════ -->
+  <section>
+    <h2>5. AI Model Strategy</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">👁️</div>
+        <h3>Vision Classification</h3>
+        <p>Use a multimodal LLM (Claude claude-sonnet-4-6 or GPT-4o) with a structured prompt to:</p>
+        <ul>
+          <li>List all detected flower species</li>
+          <li>Estimate relative proportion of each (% of arrangement)</li>
+          <li>Identify arrangement style (cascading, dome, garden, structured)</li>
+          <li>Note colour palette as hex or named swatches</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h3>Stem Count Formula</h3>
+        <p>Combine AI proportions with lookup tables:</p>
+        <ul>
+          <li><code>focal_stems = base_count × focal_pct</code></li>
+          <li><code>base_count</code> varies by arrangement type (bouquet ~25, centerpiece ~40–60)</li>
+          <li>Scale by event size multiplier from user inputs</li>
+          <li>Add 10–15% waste/breakage buffer automatically</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>Seasonality Engine</h3>
+        <p>A lookup database per flower variety stores:</p>
+        <ul>
+          <li>Peak season months (hemisphere-aware)</li>
+          <li>Off-season price premium multiplier</li>
+          <li>Top 3 substitutions by colour &amp; form</li>
+          <li>Availability flag per user's event date</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3>Conversational Refinement</h3>
+        <p>After the initial estimate, allow users to chat:</p>
+        <ul>
+          <li>"Replace peonies with garden roses to save money"</li>
+          <li>"I want a more lush, overflowing look"</li>
+          <li>"Add a flower wall — 8ft × 8ft"</li>
+          <li>"My florist says ranunculus are hard to find locally"</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 6. OUTPUT REPORT ═══════ -->
+  <section>
+    <h2>6. Output Report — What the User Receives</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Flower / Greenery</th>
+          <th>Stems / Units</th>
+          <th>Used In</th>
+          <th>Season Status</th>
+          <th>Est. Cost</th>
+          <th>Substitution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Garden Rose (blush)</td>
+          <td>48 stems</td>
+          <td>Bouquet, Centerpiece</td>
+          <td>✅ In season</td>
+          <td>$96–$144</td>
+          <td>Ranunculus</td>
+        </tr>
+        <tr>
+          <td>Peony (white)</td>
+          <td>36 stems</td>
+          <td>Bouquet, Arch</td>
+          <td>✅ In season</td>
+          <td>$144–$216</td>
+          <td>Garden Rose</td>
+        </tr>
+        <tr>
+          <td>Ranunculus (dusty rose)</td>
+          <td>72 stems</td>
+          <td>Centerpiece, BM bouquets</td>
+          <td>✅ In season</td>
+          <td>$108–$180</td>
+          <td>Anemone</td>
+        </tr>
+        <tr>
+          <td>Eucalyptus (seeded)</td>
+          <td>24 bunches</td>
+          <td>All arrangements</td>
+          <td>✅ Year-round</td>
+          <td>$72–$96</td>
+          <td>Italian Ruscus</td>
+        </tr>
+        <tr>
+          <td>Baby's Breath</td>
+          <td>18 bunches</td>
+          <td>Centerpiece, Filler</td>
+          <td>✅ Year-round</td>
+          <td>$54–$72</td>
+          <td>Wax Flower</td>
+        </tr>
+        <tr>
+          <td>Lisianthus (ivory)</td>
+          <td>30 stems</td>
+          <td>Bouquet, Corsages</td>
+          <td>⚠️ Limited supply</td>
+          <td>$75–$120</td>
+          <td>Spray Rose</td>
+        </tr>
+        <tr>
+          <td><strong>TOTAL</strong></td>
+          <td><strong>228 stems + greenery</strong></td>
+          <td></td>
+          <td></td>
+          <td><strong>$549–$828</strong></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Note:</strong> These are wholesale stem estimates. Retail pricing and florist labour (typically 2–3× wholesale) are not included. Export this list to share with your florist for a quote.
+    </div>
+  </section>
+
+  <!-- ═══════ 7. SMART FEATURES ═══════ -->
+  <section>
+    <h2>7. Smart Feature Ideas</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <h3>Colour Palette Extractor</h3>
+        <p>Automatically pull the dominant 5-colour palette from the image and let users filter the stem list by matching hues, so substitutions stay on-brand.</p>
+        <div class="tags">
+          <span class="tag tag-rose">Visual</span>
+          <span class="tag tag-sage">Branding</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Budget Slider</h3>
+        <p>Drag a total-budget slider and watch the AI automatically swap expensive focal flowers for affordable alternatives, keeping the look as close as possible to the original.</p>
+        <div class="tags">
+          <span class="tag tag-gold">Interactive</span>
+          <span class="tag tag-bark">Budget Tool</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h3>Wholesale Marketplace Link</h3>
+        <p>One-click export to floral wholesale platforms (Mayesh, FiftyFlowers, BloomNation) with pre-filled cart items matching the stem count output.</p>
+        <div class="tags">
+          <span class="tag tag-sage">Commerce</span>
+          <span class="tag tag-rose">Integration</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗓️</div>
+        <h3>Ordering Timeline</h3>
+        <p>Based on the wedding date, generate a backwards timeline: when to order, when blooms arrive, when to condition stems, and hydration day-of schedule.</p>
+        <div class="tags">
+          <span class="tag tag-bark">Planning</span>
+          <span class="tag tag-gold">Logistics</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3>Florist Collaboration Mode</h3>
+        <p>Share a read-only link with the hired florist. They can annotate the AI estimate, adjust quantities, and attach their quote — all in one place.</p>
+        <div class="tags">
+          <span class="tag tag-rose">Collaboration</span>
+          <span class="tag tag-sage">Pro Tool</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h3>Local Grower Finder</h3>
+        <p>After stem list is generated, surface nearby farms and local growers who carry those varieties — supporting local business and reducing shipping costs.</p>
+        <div class="tags">
+          <span class="tag tag-sage">Local</span>
+          <span class="tag tag-gold">Sustainability</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">♿</div>
+        <h3>Allergy &amp; Sensitivity Filter</h3>
+        <p>Flag flowers with strong scents or known allergens (lilies, stephanotis, freesia). Offer fragrance-free substitutions for sensitive guests.</p>
+        <div class="tags">
+          <span class="tag tag-bark">Accessibility</span>
+          <span class="tag tag-rose">Health</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>Sustainability Score</h3>
+        <p>Rate the arrangement's environmental footprint based on air-freight miles, pesticide use, and water consumption. Suggest a "greener" equivalent list.</p>
+        <div class="tags">
+          <span class="tag tag-sage">Eco</span>
+          <span class="tag tag-gold">Branding</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 8. WEDDING PACKAGE TEMPLATES ═══════ -->
+  <section>
+    <h2>8. Wedding Package Templates</h2>
+    <p style="font-family:sans-serif;font-size:0.92rem;color:var(--muted);margin-bottom:20px;">
+      Pre-built event templates let users skip manual setup and jump straight to customisation.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">💒</div>
+        <h3>Intimate Elopement</h3>
+        <ul>
+          <li>1 bridal bouquet</li>
+          <li>1 boutonnière</li>
+          <li>Small ceremony florals</li>
+          <li>~50–80 stems total</li>
+        </ul>
+        <div class="tags"><span class="tag tag-sage">Small Wedding</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌹</div>
+        <h3>Classic Wedding (100 guests)</h3>
+        <ul>
+          <li>1 bridal + 4 BM bouquets</li>
+          <li>10 guest centerpieces</li>
+          <li>Ceremony arch + aisle</li>
+          <li>~400–600 stems total</li>
+        </ul>
+        <div class="tags"><span class="tag tag-rose">Most Popular</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">👑</div>
+        <h3>Grand Affair (250+ guests)</h3>
+        <ul>
+          <li>Full bridal party florals</li>
+          <li>25+ centerpieces</li>
+          <li>Flower wall, arch, aisle</li>
+          <li>1,200+ stems total</li>
+        </ul>
+        <div class="tags"><span class="tag tag-gold">Luxury Tier</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌾</div>
+        <h3>DIY Bride</h3>
+        <ul>
+          <li>Bulk stem quantities per bucket</li>
+          <li>Step-by-step arrangement guide</li>
+          <li>Tool &amp; supply list included</li>
+          <li>Tutorial video recommendations</li>
+        </ul>
+        <div class="tags"><span class="tag tag-bark">Budget-Friendly</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 9. TECH STACK ═══════ -->
+  <section>
+    <h2>9. Suggested Tech Stack</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Frontend</td>
+          <td>React + Tailwind CSS</td>
+          <td>Upload UI, results dashboard, budget slider</td>
+        </tr>
+        <tr>
+          <td>Vision AI</td>
+          <td>Claude claude-sonnet-4-6 (multimodal)</td>
+          <td>Flower species detection &amp; proportion estimation</td>
+        </tr>
+        <tr>
+          <td>Backend API</td>
+          <td>Python / FastAPI</td>
+          <td>Orchestrate AI calls, apply formula logic, serve report</td>
+        </tr>
+        <tr>
+          <td>Flower Database</td>
+          <td>PostgreSQL + JSON</td>
+          <td>Seasonality, pricing ranges, substitutions per variety</td>
+        </tr>
+        <tr>
+          <td>Image Storage</td>
+          <td>S3-compatible (Cloudflare R2)</td>
+          <td>Store uploaded inspiration images per session</td>
+        </tr>
+        <tr>
+          <td>PDF Export</td>
+          <td>WeasyPrint / Puppeteer</td>
+          <td>Generate printable stem list &amp; budget report</td>
+        </tr>
+        <tr>
+          <td>Auth</td>
+          <td>Auth0 / Clerk</td>
+          <td>Save wedding profiles, share with florists</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════ 10. PRIORITY ROADMAP ═══════ -->
+  <section>
+    <h2>10. Feature Priority Roadmap</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Feature</th>
+          <th>Priority</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MVP</td>
+          <td>Image upload + AI flower detection</td>
+          <td><span class="p-high">High</span></td>
+          <td>Core value proposition</td>
+        </tr>
+        <tr>
+          <td>MVP</td>
+          <td>Stem count formula engine</td>
+          <td><span class="p-high">High</span></td>
+          <td>Bouquet + centerpiece types</td>
+        </tr>
+        <tr>
+          <td>MVP</td>
+          <td>Event size scaling inputs</td>
+          <td><span class="p-high">High</span></td>
+          <td>Tables, bridal party, ceremony</td>
+        </tr>
+        <tr>
+          <td>MVP</td>
+          <td>PDF stem list export</td>
+          <td><span class="p-high">High</span></td>
+          <td>Share with florist</td>
+        </tr>
+        <tr>
+          <td>v1.1</td>
+          <td>Seasonality &amp; availability flags</td>
+          <td><span class="p-med">Medium</span></td>
+          <td>Needs flower DB</td>
+        </tr>
+        <tr>
+          <td>v1.1</td>
+          <td>Budget slider with substitutions</td>
+          <td><span class="p-med">Medium</span></td>
+          <td>High user delight feature</td>
+        </tr>
+        <tr>
+          <td>v1.1</td>
+          <td>Colour palette extraction</td>
+          <td><span class="p-med">Medium</span></td>
+          <td>CSS canvas API</td>
+        </tr>
+        <tr>
+          <td>v1.1</td>
+          <td>Pinterest board multi-image input</td>
+          <td><span class="p-med">Medium</span></td>
+          <td>URL scrape or screenshot upload</td>
+        </tr>
+        <tr>
+          <td>v2.0</td>
+          <td>Florist collaboration share link</td>
+          <td><span class="p-low">Low</span></td>
+          <td>Requires auth system</td>
+        </tr>
+        <tr>
+          <td>v2.0</td>
+          <td>Wholesale marketplace integration</td>
+          <td><span class="p-low">Low</span></td>
+          <td>Partner API deals needed</td>
+        </tr>
+        <tr>
+          <td>v2.0</td>
+          <td>Local grower map</td>
+          <td><span class="p-low">Low</span></td>
+          <td>Geolocation + grower DB</td>
+        </tr>
+        <tr>
+          <td>v2.0</td>
+          <td>Sustainability score</td>
+          <td><span class="p-low">Low</span></td>
+          <td>Differentiator, not core</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════ 11. KEY AI PROMPT PATTERN ═══════ -->
+  <section>
+    <h2>11. Key AI Prompt Pattern (Claude Vision)</h2>
+    <div class="card" style="font-family:monospace;font-size:0.82rem;background:#1e1e1e;color:#d4d4d4;border-color:#333;max-width:800px;">
+      <div style="color:#608b4e;margin-bottom:8px;">// System prompt for flower detection</div>
+      <div style="color:#ce9178;">You are a professional floral designer and botanist assistant.<br/>
+      Analyse the provided image of a floral arrangement and return a JSON object with:<br/><br/>
+      {<br/>
+      &nbsp;&nbsp;"arrangement_type": "bouquet | centerpiece | arch | installation | mixed",<br/>
+      &nbsp;&nbsp;"style": "garden | structured | cascade | tropical | wildflower | modern",<br/>
+      &nbsp;&nbsp;"colour_palette": ["#hex1", "#hex2", ...],<br/>
+      &nbsp;&nbsp;"flowers": [<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"common_name": "Garden Rose",<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"botanical_name": "Rosa hybrida",<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"role": "focal | secondary | filler | greenery",<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"proportion_pct": 35,<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"confidence": 0.92<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
+      &nbsp;&nbsp;],<br/>
+      &nbsp;&nbsp;"notes": "string — any style or sourcing observations"<br/>
+      }</div>
+    </div>
+  </section>
+
+  <!-- ═══════ 12. OPEN QUESTIONS ═══════ -->
+  <section>
+    <h2>12. Open Questions &amp; Next Steps</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">❓</div>
+        <h3>Accuracy Validation</h3>
+        <p>How do we validate stem counts against real florist quotes? Consider partnering with 5–10 florists to label training images and create a ground-truth dataset.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>Pricing Data Source</h3>
+        <p>Flower wholesale prices fluctuate seasonally. Do we maintain our own pricing DB, scrape wholesalers, or use an existing floral pricing API?</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📏</div>
+        <h3>Scale Estimation</h3>
+        <p>Without a reference object in image, scale is ambiguous. Should we ask users to describe arrangement size, or use AI to infer from context clues?</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Target User</h3>
+        <p>Is this primarily for brides planning DIY florals, or a B2B tool for professional florists to speed up their quoting workflow? The UX differs significantly.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Floral AI Stem Calculator &mdash; Brainstorm Document &mdash; Evently &mdash; 2026
+</footer>
+
+</body>
+</html>

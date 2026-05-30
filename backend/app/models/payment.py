@@ -4,7 +4,6 @@ Evently — Payment Models
 import enum
 from app.extensions import db
 from app.models.core import gen_uuid, utcnow
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 
 class PaymentMethod(enum.Enum):
@@ -37,10 +36,10 @@ class SyncStatus(enum.Enum):
 class Payment(db.Model):
     __tablename__ = "payments"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=False, index=True)
-    client_id = db.Column(UUID(as_uuid=False), db.ForeignKey("clients.id"), nullable=False)
-    schedule_id = db.Column(UUID(as_uuid=False), db.ForeignKey("payment_schedules.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=False, index=True)
+    client_id = db.Column(db.String(36), db.ForeignKey("clients.id"), nullable=False)
+    schedule_id = db.Column(db.String(36), db.ForeignKey("payment_schedules.id"), nullable=True)
 
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     method = db.Column(db.Enum(PaymentMethod, name="payment_method"), nullable=False)
@@ -56,7 +55,7 @@ class Payment(db.Model):
     card_brand = db.Column(db.String(20))
     processing_fee = db.Column(db.Numeric(10, 2), default=0)
     net_amount = db.Column(db.Numeric(12, 2))
-    payment_metadata = db.Column(JSONB, default=dict)
+    payment_metadata = db.Column(db.JSON, default=dict)
 
     due_date = db.Column(db.DateTime(timezone=True))
     paid_at = db.Column(db.DateTime(timezone=True))
@@ -71,8 +70,8 @@ class Payment(db.Model):
 class PaymentSchedule(db.Model):
     __tablename__ = "payment_schedules"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
 
     label = db.Column(db.String(100), nullable=False)  # "Deposit 50%", "Balance"
     amount = db.Column(db.Numeric(12, 2), nullable=False)
@@ -80,7 +79,7 @@ class PaymentSchedule(db.Model):
     is_paid = db.Column(db.Boolean, default=False)
     reminder_sent = db.Column(db.Boolean, default=False)
     reminder_sent_at = db.Column(db.DateTime(timezone=True))
-    payment_id = db.Column(UUID(as_uuid=False), nullable=True)  # Linked when paid
+    payment_id = db.Column(db.String(36), nullable=True)  # Linked when paid
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
 
@@ -90,13 +89,13 @@ class PaymentSchedule(db.Model):
 class QuickBooksSync(db.Model):
     __tablename__ = "quickbooks_syncs"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     entity_type = db.Column(db.String(50), nullable=False)  # invoice, payment, customer
-    entity_id = db.Column(UUID(as_uuid=False), nullable=False)
+    entity_id = db.Column(db.String(36), nullable=False)
     qb_id = db.Column(db.String(100))
     status = db.Column(db.Enum(SyncStatus, name="sync_status"), default=SyncStatus.pending)
-    error_details = db.Column(JSONB, default=dict)
+    error_details = db.Column(db.JSON, default=dict)
     last_synced_at = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
 

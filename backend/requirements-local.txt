@@ -1,0 +1,21 @@
+# FloraFlow — Local development dependencies
+# Stripped down: no PostgreSQL, Redis, Celery, Stripe, SendGrid, etc.
+# Install with: pip install -r requirements-local.txt
+
+Flask==3.1.0
+SQLAlchemy==2.0.36
+Flask-SQLAlchemy==3.1.1
+Flask-CORS==5.0.0
+Flask-JWT-Extended==4.7.1
+Flask-Migrate==4.0.7
+Flask-Caching==2.3.0
+flask-marshmallow==1.2.1
+marshmallow-sqlalchemy==1.1.0
+marshmallow==3.23.2
+alembic==1.14.1
+bcrypt==4.2.1
+PyJWT==2.10.1
+python-dotenv==1.0.1
+python-dateutil==2.9.0.post0
+pytz==2024.2
+requests==2.32.3

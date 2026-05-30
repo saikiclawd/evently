@@ -8,3 +8,4 @@ from app.api.v1 import auth        # noqa: E402, F401
 from app.api.v1 import inventory   # noqa: E402, F401
 from app.api.v1 import projects    # noqa: E402, F401
 from app.api.v1 import routes      # noqa: E402, F401
+from app.api.v1 import flora       # noqa: E402, F401
