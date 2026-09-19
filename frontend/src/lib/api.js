@@ -80,6 +80,34 @@ export const clients = {
   get: (id) => api.get(`/clients/${id}`),
   create: (data) => api.post("/clients", data),
   update: (id, data) => api.patch(`/clients/${id}`, data),
+
+  // Pipeline (CRM)
+  pipeline: () => api.get("/clients/pipeline"),
+  moveStage: (id, lifecycle_stage) => api.post(`/clients/${id}/stage`, { lifecycle_stage }),
+
+  // Contacts
+  contacts: (id) => api.get(`/clients/${id}/contacts`),
+  addContact: (id, data) => api.post(`/clients/${id}/contacts`, data),
+  updateContact: (contactId, data) => api.patch(`/contacts/${contactId}`, data),
+  deleteContact: (contactId) => api.delete(`/contacts/${contactId}`),
+
+  // Notes
+  notes: (id) => api.get(`/clients/${id}/notes`),
+  addNote: (id, data) => api.post(`/clients/${id}/notes`, data),
+  deleteNote: (noteId) => api.delete(`/notes/${noteId}`),
+
+  // Tasks
+  tasks: (id) => api.get(`/clients/${id}/tasks`),
+  addTask: (id, data) => api.post(`/clients/${id}/tasks`, data),
+
+  // Timeline
+  timeline: (id) => api.get(`/clients/${id}/timeline`),
+};
+
+export const tasks = {
+  list: (params) => api.get("/tasks", { params }),
+  update: (id, data) => api.patch(`/tasks/${id}`, data),
+  delete: (id) => api.delete(`/tasks/${id}`),
 };
 
 export const payments = {

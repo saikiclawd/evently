@@ -79,7 +79,8 @@ def update_client(client_id):
     company_id = get_current_company_id()
     client = Client.query.filter_by(id=client_id, company_id=company_id).first_or_404()
     data = request.json
-    for key in ["name", "email", "phone", "address", "tags", "preferences", "saved_terms", "notes"]:
+    for key in ["name", "email", "phone", "address", "website", "tags", "preferences",
+                "saved_terms", "notes", "lifecycle_stage", "lead_source", "owner_id"]:
         if key in data:
             setattr(client, key, data[key])
     db.session.commit()

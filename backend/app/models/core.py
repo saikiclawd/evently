@@ -98,14 +98,22 @@ class Client(db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
     company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
+    owner_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)  # account owner
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(255), index=True)
     phone = db.Column(db.String(30))
     address = db.Column(db.Text)
+    website = db.Column(db.String(500))
     tags = db.Column(db.JSON, default=list)
     preferences = db.Column(db.JSON, default=dict)
     saved_terms = db.Column(db.JSON, default=dict)
     notes = db.Column(db.Text)
+
+    # CRM pipeline (independent of any single Project's stage — this tracks
+    # the overall relationship: has this person ever become a paying client?)
+    lifecycle_stage = db.Column(db.String(20), default="lead", index=True)  # LifecycleStage enum value
+    lead_source = db.Column(db.String(100))  # referral, instagram, website, wedding_show, etc.
+
     total_spent = db.Column(db.Numeric(12, 2), default=0)
     event_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -115,6 +123,13 @@ class Client(db.Model):
     projects = db.relationship("Project", backref="client", lazy="dynamic")
     payments = db.relationship("Payment", backref="client", lazy="dynamic")
     messages = db.relationship("Message", backref="client", lazy="dynamic")
+    owner = db.relationship("User", foreign_keys=[owner_id])
+    contacts = db.relationship("Contact", backref="client", lazy="dynamic",
+                                cascade="all, delete-orphan", order_by="Contact.is_primary.desc()")
+    crm_notes = db.relationship("Note", backref="client", lazy="dynamic",
+                                 cascade="all, delete-orphan", order_by="Note.created_at.desc()")
+    crm_tasks = db.relationship("Task", backref="client", lazy="dynamic",
+                                 cascade="all, delete-orphan", order_by="Task.due_date")
 
     def __repr__(self):
         return f"<Client {self.name}>"

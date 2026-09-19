@@ -102,6 +102,112 @@ export function useCreateClient() {
   });
 }
 
+// ── CRM: Pipeline ──
+
+export function useClientPipeline() {
+  return useQuery({
+    queryKey: ["clients", "pipeline"],
+    queryFn: () => api.clients.pipeline().then((r) => r.data),
+  });
+}
+
+export function useMoveClientStage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, stage }) => api.clients.moveStage(id, stage).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients", "pipeline"] });
+      qc.invalidateQueries({ queryKey: ["clients"] });
+    },
+  });
+}
+
+// ── CRM: Client Detail (contacts, notes, tasks, timeline) ──
+
+export function useClient(id) {
+  return useQuery({
+    queryKey: ["client", id],
+    queryFn: () => api.clients.get(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useClientContacts(id) {
+  return useQuery({
+    queryKey: ["client", id, "contacts"],
+    queryFn: () => api.clients.contacts(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddContact(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addContact(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "contacts"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId] });
+    },
+  });
+}
+
+export function useClientNotes(id) {
+  return useQuery({
+    queryKey: ["client", id, "notes"],
+    queryFn: () => api.clients.notes(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddNote(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addNote(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "notes"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId, "timeline"] });
+    },
+  });
+}
+
+export function useClientTasks(id) {
+  return useQuery({
+    queryKey: ["client", id, "tasks"],
+    queryFn: () => api.clients.tasks(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddTask(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addTask(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "tasks"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId] });
+    },
+  });
+}
+
+export function useUpdateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => api.tasks.update(id, data).then((r) => r.data),
+    onSuccess: (task) => {
+      qc.invalidateQueries({ queryKey: ["client", task.client_id, "tasks"] });
+      qc.invalidateQueries({ queryKey: ["client", task.client_id] });
+    },
+  });
+}
+
+export function useClientTimeline(id) {
+  return useQuery({
+    queryKey: ["client", id, "timeline"],
+    queryFn: () => api.clients.timeline(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
 // ── Payments ──
 
 export function usePayments(params) {
