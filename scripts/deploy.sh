@@ -34,10 +34,11 @@ echo ""
 cd "$APP_DIR"
 
 if [ "$RESTART_ONLY" = false ]; then
-    # ── Pull latest code ──
-    log "Pulling latest code..."
-    git fetch origin main
-    git reset --hard origin/main
+    # ── Pull latest code (whatever branch is currently checked out) ──
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    log "Pulling latest code on branch '$CURRENT_BRANCH'..."
+    git fetch origin "$CURRENT_BRANCH"
+    git reset --hard "origin/$CURRENT_BRANCH"
     log "Code updated ($(git rev-parse --short HEAD))"
 
     # ── Update Python dependencies ──
