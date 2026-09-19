@@ -67,6 +67,12 @@ def create_client():
 
     company_id = get_current_company_id()
     data = request.json
+
+    if data.get("owner_id") and not User.query.filter_by(
+        id=data["owner_id"], company_id=company_id
+    ).first():
+        return jsonify({"error": "owner_id does not belong to this company"}), 404
+
     client = Client(company_id=company_id, **{k: data[k] for k in data if hasattr(Client, k)})
     db.session.add(client)
     db.session.commit()
@@ -79,6 +85,17 @@ def update_client(client_id):
     company_id = get_current_company_id()
     client = Client.query.filter_by(id=client_id, company_id=company_id).first_or_404()
     data = request.json
+
+    if "lifecycle_stage" in data:
+        valid_stages = ["lead", "qualified", "active", "past_client", "lost"]
+        if data["lifecycle_stage"] not in valid_stages:
+            return jsonify({"error": f"lifecycle_stage must be one of {valid_stages}"}), 400
+
+    if data.get("owner_id") and not User.query.filter_by(
+        id=data["owner_id"], company_id=company_id
+    ).first():
+        return jsonify({"error": "owner_id does not belong to this company"}), 404
+
     for key in ["name", "email", "phone", "address", "website", "tags", "preferences",
                 "saved_terms", "notes", "lifecycle_stage", "lead_source", "owner_id"]:
         if key in data:

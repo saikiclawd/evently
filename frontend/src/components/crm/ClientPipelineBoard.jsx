@@ -11,12 +11,17 @@ const STAGE_META = {
   lost:         { label: "Lost",         color: "bg-red-50 text-red-500" },
 };
 
-function ClientCard({ client, onOpen }) {
+function ClientCard({ client, stage, onOpen }) {
   // Drag listeners live only on the grip handle below — keeping them off the
   // card body means a plain click still opens the detail drawer (dnd-kit's
   // pointer listeners on the same element as onClick can swallow the click).
+  //
+  // The source stage travels with the drag via `data` rather than being
+  // looked up from the board cache on drop — scanning the cache is racy if
+  // a card is dragged again before the previous move's refetch lands.
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: client.id,
+    data: { stage },
   });
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 }
@@ -81,7 +86,7 @@ function StageColumn({ stage, clients, onOpen }) {
       </div>
       <div className="min-h-[60px]">
         {clients.map((c) => (
-          <ClientCard key={c.id} client={c} onOpen={onOpen} />
+          <ClientCard key={c.id} client={c} stage={stage} onOpen={onOpen} />
         ))}
         {clients.length === 0 && (
           <div className="text-center py-6 text-[11px] text-gray-300">No clients</div>
@@ -108,8 +113,8 @@ export default function ClientPipelineBoard({ onOpen }) {
     if (!over) return;
     const clientId = active.id;
     const newStage = over.id;
-    const currentStage = stages.find((s) => (board[s] || []).some((c) => c.id === clientId));
-    if (currentStage === newStage) return;
+    const sourceStage = active.data.current?.stage;
+    if (sourceStage === newStage) return;
     moveStage.mutate({ id: clientId, stage: newStage });
   }
 

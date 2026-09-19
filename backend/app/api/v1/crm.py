@@ -10,7 +10,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.api.v1 import api_v1_bp
 from app.extensions import db
-from app.models import Client, Contact, Note, Task, ActivityLog, TaskStatus, TaskPriority
+from app.models import Client, Contact, Note, Task, ActivityLog, User, Project, TaskStatus, TaskPriority
 from app.schemas import (
     ClientSchema,
     ContactSchema, ContactCreateSchema,
@@ -18,6 +18,8 @@ from app.schemas import (
     TaskSchema, TaskCreateSchema, TaskUpdateSchema,
 )
 from app.api.v1.inventory import get_current_company_id
+
+LIFECYCLE_STAGES = ["lead", "qualified", "active", "past_client", "lost"]
 
 
 def _err(message, status=400):
@@ -35,6 +37,15 @@ def _log(company_id, entity_type, entity_id, action, changes=None):
     ))
 
 
+def _verify_same_company(model, obj_id, company_id):
+    """Confirm a client-supplied foreign key (project_id, assignee_id, owner_id...)
+    actually belongs to the current tenant, so one company can never link its
+    records to another company's Project/User rows."""
+    if obj_id is None:
+        return True
+    return model.query.filter_by(id=obj_id, company_id=company_id).first() is not None
+
+
 # ════════════════════════════════════════
 # PIPELINE — lifecycle stage board
 # ════════════════════════════════════════
@@ -44,15 +55,32 @@ def _log(company_id, entity_type, entity_id, action, changes=None):
 def crm_pipeline():
     """Clients grouped by lifecycle stage, for the CRM kanban view."""
     company_id = get_current_company_id()
-    stages = ["lead", "qualified", "active", "past_client", "lost"]
     clients = Client.query.filter_by(company_id=company_id).order_by(Client.updated_at.desc()).all()
 
-    board = {stage: [] for stage in stages}
+    # Bulk-count contacts/tasks per client instead of letting ClientSchema
+    # issue two extra queries per row (N+1 — flagged in review).
+    client_ids = [c.id for c in clients]
+    contact_counts = dict(
+        db.session.query(Contact.client_id, db.func.count(Contact.id))
+        .filter(Contact.client_id.in_(client_ids)).group_by(Contact.client_id).all()
+    ) if client_ids else {}
+    open_task_counts = dict(
+        db.session.query(Task.client_id, db.func.count(Task.id))
+        .filter(Task.client_id.in_(client_ids), Task.status != TaskStatus.done)
+        .group_by(Task.client_id).all()
+    ) if client_ids else {}
+
+    # Exclude the per-row Method fields here — we already computed them in bulk above.
+    bulk_schema = ClientSchema(exclude=("contact_count", "open_task_count"))
+    board = {stage: [] for stage in LIFECYCLE_STAGES}
     for c in clients:
         stage = c.lifecycle_stage if c.lifecycle_stage in board else "lead"
-        board[stage].append(ClientSchema().dump(c))
+        dumped = bulk_schema.dump(c)
+        dumped["contact_count"] = contact_counts.get(c.id, 0)
+        dumped["open_task_count"] = open_task_counts.get(c.id, 0)
+        board[stage].append(dumped)
 
-    return jsonify({"stages": stages, "board": board})
+    return jsonify({"stages": LIFECYCLE_STAGES, "board": board})
 
 
 @api_v1_bp.route("/clients/<client_id>/stage", methods=["POST"])
@@ -61,9 +89,8 @@ def move_client_stage(client_id):
     company_id = get_current_company_id()
     client = _get_client_or_404(client_id, company_id)
     stage = (request.json or {}).get("lifecycle_stage")
-    valid = ["lead", "qualified", "active", "past_client", "lost"]
-    if stage not in valid:
-        return _err(f"lifecycle_stage must be one of {valid}")
+    if stage not in LIFECYCLE_STAGES:
+        return _err(f"lifecycle_stage must be one of {LIFECYCLE_STAGES}")
 
     old_stage = client.lifecycle_stage
     client.lifecycle_stage = stage
@@ -155,6 +182,9 @@ def create_note(client_id):
         return jsonify({"errors": errors}), 400
 
     data = request.json
+    if not _verify_same_company(Project, data.get("project_id"), company_id):
+        return _err("project_id does not belong to this company", 404)
+
     note = Note(company_id=company_id, client_id=client.id, author_id=get_jwt_identity(),
                 body=data["body"], project_id=data.get("project_id"),
                 is_pinned=data.get("is_pinned", False))
@@ -216,6 +246,11 @@ def create_task(client_id):
         return jsonify({"errors": errors}), 400
 
     data = TaskCreateSchema().load(request.json)  # deserializes due_date to a datetime
+    if not _verify_same_company(Project, data.get("project_id"), company_id):
+        return _err("project_id does not belong to this company", 404)
+    if not _verify_same_company(User, data.get("assignee_id"), company_id):
+        return _err("assignee_id does not belong to this company", 404)
+
     task = Task(
         company_id=company_id, client_id=client.id,
         title=data["title"], description=data.get("description"),
@@ -240,6 +275,9 @@ def update_task(task_id):
         return jsonify({"errors": errors}), 400
 
     data = TaskUpdateSchema().load(request.json)  # deserializes due_date to a datetime
+    if "assignee_id" in data and not _verify_same_company(User, data["assignee_id"], company_id):
+        return _err("assignee_id does not belong to this company", 404)
+
     for key in ["title", "description", "due_date", "assignee_id"]:
         if key in data:
             setattr(task, key, data[key])
@@ -283,7 +321,9 @@ def client_timeline(client_id):
             "body": note.body, "is_pinned": note.is_pinned,
             "author": note.author.name if note.author else None,
         })
-    for log in ActivityLog.query.filter_by(entity_type="client", entity_id=client.id).all():
+    for log in ActivityLog.query.filter_by(
+        company_id=company_id, entity_type="client", entity_id=client.id
+    ).all():
         events.append({
             "type": "activity", "id": log.id, "created_at": log.created_at.isoformat(),
             "action": log.action, "changes": log.changes,
