@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import * as api from "@/lib/api";
 
 // ── Inventory ──
@@ -99,6 +100,149 @@ export function useCreateClient() {
   return useMutation({
     mutationFn: (data) => api.clients.create(data).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clients"] }),
+  });
+}
+
+// ── CRM: Pipeline ──
+
+export function useClientPipeline() {
+  return useQuery({
+    queryKey: ["clients", "pipeline"],
+    queryFn: () => api.clients.pipeline().then((r) => r.data),
+  });
+}
+
+export function useMoveClientStage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, stage }) => api.clients.moveStage(id, stage).then((r) => r.data),
+    // Optimistically move the card so the drop feels instant instead of
+    // snapping back to the source column until the refetch lands.
+    onMutate: async ({ id, stage: newStage }) => {
+      await qc.cancelQueries({ queryKey: ["clients", "pipeline"] });
+      const previous = qc.getQueryData(["clients", "pipeline"]);
+      if (previous) {
+        const board = { ...previous.board };
+        let moved = null;
+        for (const s of previous.stages) {
+          const idx = (board[s] || []).findIndex((c) => c.id === id);
+          if (idx !== -1) {
+            moved = board[s][idx];
+            board[s] = board[s].filter((c) => c.id !== id);
+            break;
+          }
+        }
+        if (moved) {
+          board[newStage] = [{ ...moved, lifecycle_stage: newStage }, ...(board[newStage] || [])];
+          qc.setQueryData(["clients", "pipeline"], { ...previous, board });
+        }
+      }
+      return { previous };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) qc.setQueryData(["clients", "pipeline"], context.previous);
+      toast.error(err?.response?.data?.error || "Failed to move client");
+    },
+    onSettled: (_data, _err, { id }) => {
+      qc.invalidateQueries({ queryKey: ["clients", "pipeline"] });
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["client", id] });
+    },
+  });
+}
+
+// ── CRM: Client Detail (contacts, notes, tasks, timeline) ──
+
+export function useClient(id) {
+  return useQuery({
+    queryKey: ["client", id],
+    queryFn: () => api.clients.get(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useClientContacts(id) {
+  return useQuery({
+    queryKey: ["client", id, "contacts"],
+    queryFn: () => api.clients.contacts(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddContact(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addContact(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "contacts"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId] });
+      // contact_count is also shown on the list view and pipeline cards
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["clients", "pipeline"] });
+    },
+  });
+}
+
+export function useClientNotes(id) {
+  return useQuery({
+    queryKey: ["client", id, "notes"],
+    queryFn: () => api.clients.notes(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddNote(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addNote(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "notes"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId, "timeline"] });
+    },
+  });
+}
+
+export function useClientTasks(id) {
+  return useQuery({
+    queryKey: ["client", id, "tasks"],
+    queryFn: () => api.clients.tasks(id).then((r) => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useAddTask(clientId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => api.clients.addTask(clientId, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["client", clientId, "tasks"] });
+      qc.invalidateQueries({ queryKey: ["client", clientId] });
+      // open_task_count is also shown on the list view and pipeline cards
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["clients", "pipeline"] });
+    },
+  });
+}
+
+export function useUpdateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => api.tasks.update(id, data).then((r) => r.data),
+    onSuccess: (task) => {
+      qc.invalidateQueries({ queryKey: ["client", task.client_id, "tasks"] });
+      qc.invalidateQueries({ queryKey: ["client", task.client_id] });
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["clients", "pipeline"] });
+    },
+    onError: () => toast.error("Failed to update task"),
+  });
+}
+
+export function useClientTimeline(id) {
+  return useQuery({
+    queryKey: ["client", id, "timeline"],
+    queryFn: () => api.clients.timeline(id).then((r) => r.data),
+    enabled: !!id,
   });
 }
 

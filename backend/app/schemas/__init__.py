@@ -8,6 +8,7 @@ from app.models import (
     Payment, PaymentSchedule,
     Vehicle, Route, RouteStop, RouteAssignment, PullSheet,
     Message, ActivityLog, WebsiteWishlist,
+    Contact, Note, Task, TaskStatus,
 )
 from marshmallow import fields, validate, pre_load, post_dump
 
@@ -46,6 +47,71 @@ class LoginSchema(ma.Schema):
     password = fields.String(required=True)
 
 
+class ContactSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Contact
+        load_instance = True
+        include_fk = True
+
+
+class ContactCreateSchema(ma.Schema):
+    name = fields.String(required=True, validate=validate.Length(min=1, max=200))
+    role = fields.String()
+    email = fields.Email(allow_none=True)
+    phone = fields.String()
+    is_primary = fields.Boolean()
+
+
+class NoteSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Note
+        load_instance = True
+        include_fk = True
+
+    author = ma.Nested(lambda: UserSchema, dump_only=True, only=("id", "name"))
+
+
+class NoteCreateSchema(ma.Schema):
+    body = fields.String(required=True, validate=validate.Length(min=1))
+    project_id = fields.String(allow_none=True)
+    is_pinned = fields.Boolean()
+
+
+class TaskSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Task
+        load_instance = True
+        include_fk = True
+
+    status = fields.Method("_get_status", dump_only=True)
+    priority = fields.Method("_get_priority", dump_only=True)
+    assignee = ma.Nested(lambda: UserSchema, dump_only=True, only=("id", "name"))
+
+    def _get_status(self, obj):
+        return obj.status.value if obj.status else None
+
+    def _get_priority(self, obj):
+        return obj.priority.value if obj.priority else None
+
+
+class TaskCreateSchema(ma.Schema):
+    title = fields.String(required=True, validate=validate.Length(min=1, max=300))
+    description = fields.String()
+    due_date = fields.DateTime(allow_none=True)
+    priority = fields.String(validate=validate.OneOf(["low", "medium", "high"]))
+    assignee_id = fields.String(allow_none=True)
+    project_id = fields.String(allow_none=True)
+
+
+class TaskUpdateSchema(ma.Schema):
+    title = fields.String(validate=validate.Length(min=1, max=300))
+    description = fields.String()
+    due_date = fields.DateTime(allow_none=True)
+    status = fields.String(validate=validate.OneOf(["todo", "in_progress", "done"]))
+    priority = fields.String(validate=validate.OneOf(["low", "medium", "high"]))
+    assignee_id = fields.String(allow_none=True)
+
+
 class ClientSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Client
@@ -54,6 +120,16 @@ class ClientSchema(ma.SQLAlchemyAutoSchema):
 
     event_count = fields.Integer(dump_only=True)
     total_spent = fields.Float(dump_only=True)
+    lifecycle_stage = fields.String()
+    owner = ma.Nested(lambda: UserSchema, dump_only=True, only=("id", "name"))
+    contact_count = fields.Method("_get_contact_count", dump_only=True)
+    open_task_count = fields.Method("_get_open_task_count", dump_only=True)
+
+    def _get_contact_count(self, obj):
+        return obj.contacts.count()
+
+    def _get_open_task_count(self, obj):
+        return obj.crm_tasks.filter(Task.status != TaskStatus.done).count()
 
 
 class ClientCreateSchema(ma.Schema):
@@ -61,8 +137,13 @@ class ClientCreateSchema(ma.Schema):
     email = fields.Email()
     phone = fields.String()
     address = fields.String()
+    website = fields.String()
     tags = fields.List(fields.String())
     notes = fields.String()
+    lifecycle_stage = fields.String(validate=validate.OneOf(
+        ["lead", "qualified", "active", "past_client", "lost"]))
+    lead_source = fields.String()
+    owner_id = fields.String(allow_none=True)
 
 
 # ════════════════════════════════════════

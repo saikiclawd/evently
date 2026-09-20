@@ -2,8 +2,21 @@ import { NavLink } from "react-router-dom";
 import {
   BarChart3, Package, FileText, CreditCard, Truck, Users,
   Calendar, Globe, Zap, ChevronLeft, ChevronRight, PenTool, LogOut,
+  FlowerIcon, ClipboardList, ShoppingCart, BookOpen, Sparkles,
 } from "lucide-react";
 import useAuthStore from "@/store/authStore";
+
+// Use Flower from lucide if available, otherwise use a custom SVG
+const Flower = ({ size = 18, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4"/>
+    <path d="M12 14a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4"/>
+    <path d="M2 12a4 4 0 0 1 4-4 4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4"/>
+    <path d="M14 12a4 4 0 0 1 4-4 4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4"/>
+  </svg>
+);
 
 const navItems = [
   { to: "/", icon: BarChart3, label: "Dashboard" },
@@ -16,6 +29,14 @@ const navItems = [
   { to: "/calendar", icon: Calendar, label: "Calendar" },
   { to: "/reports", icon: BarChart3, label: "Reports" },
   { to: "/website", icon: Globe, label: "Website" },
+];
+
+const floraItems = [
+  { to: "/flora/ai",      icon: Sparkles,       label: "AI Analyzer" },
+  { to: "/flora/recipes", icon: BookOpen,       label: "Recipes" },
+  { to: "/flora/events",  icon: Calendar,       label: "Events" },
+  { to: "/flora/orders",  icon: ShoppingCart,   label: "Orders" },
+  { to: "/flora/catalog", icon: ClipboardList,  label: "Catalog" },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }) {
@@ -52,6 +73,31 @@ export default function Sidebar({ collapsed, setCollapsed }) {
                 isActive
                   ? "bg-accent/8 text-accent"
                   : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+              } ${collapsed ? "justify-center px-0" : ""}`
+            }
+          >
+            <Icon size={18} className="flex-shrink-0" />
+            {!collapsed && <span>{label}</span>}
+          </NavLink>
+        ))}
+
+        {/* FloraFlow Section */}
+        {!collapsed && (
+          <div className="mt-4 mb-1 px-3 flex items-center gap-1.5">
+            <Flower size={12} className="text-flora-gold" />
+            <span className="text-[10px] font-bold text-flora-gold tracking-widest uppercase">FloraFlow</span>
+          </div>
+        )}
+        {collapsed && <div className="mt-3 mb-1 border-t border-gray-100" />}
+        {floraItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-flora-gold-lt text-flora-gold"
+                  : "text-gray-500 hover:bg-flora-cream hover:text-gray-800"
               } ${collapsed ? "justify-center px-0" : ""}`
             }
           >

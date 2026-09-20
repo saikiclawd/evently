@@ -4,7 +4,6 @@ Evently — Core Models: Company, User, Client
 import uuid
 from datetime import datetime, timezone
 from app.extensions import db
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy import String, Enum as PgEnum
 import enum
 
@@ -31,14 +30,14 @@ class UserRole(enum.Enum):
 class Company(db.Model):
     __tablename__ = "companies"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
     name = db.Column(db.String(200), nullable=False)
     logo_url = db.Column(db.String(500))
     website_url = db.Column(db.String(500))
     phone = db.Column(db.String(30))
     address = db.Column(db.Text)
     timezone = db.Column(db.String(50), default="UTC")
-    branding_config = db.Column(JSONB, default=dict)
+    branding_config = db.Column(db.JSON, default=dict)
     stripe_account_id = db.Column(db.String(100))
     quickbooks_realm_id = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -59,15 +58,15 @@ class Company(db.Model):
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
     name = db.Column(db.String(200), nullable=False)
     role = db.Column(PgEnum(UserRole, name="user_role"), default=UserRole.full)
     phone = db.Column(db.String(30))
     avatar_url = db.Column(db.String(500))
-    permissions = db.Column(JSONB, default=dict)
+    permissions = db.Column(db.JSON, default=dict)
     is_active = db.Column(db.Boolean, default=True)
     last_login = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -97,16 +96,24 @@ class User(db.Model):
 class Client(db.Model):
     __tablename__ = "clients"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
+    owner_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)  # account owner
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(255), index=True)
     phone = db.Column(db.String(30))
     address = db.Column(db.Text)
-    tags = db.Column(ARRAY(db.String), default=list)
-    preferences = db.Column(JSONB, default=dict)
-    saved_terms = db.Column(JSONB, default=dict)
+    website = db.Column(db.String(500))
+    tags = db.Column(db.JSON, default=list)
+    preferences = db.Column(db.JSON, default=dict)
+    saved_terms = db.Column(db.JSON, default=dict)
     notes = db.Column(db.Text)
+
+    # CRM pipeline (independent of any single Project's stage — this tracks
+    # the overall relationship: has this person ever become a paying client?)
+    lifecycle_stage = db.Column(db.String(20), default="lead", index=True)  # LifecycleStage enum value
+    lead_source = db.Column(db.String(100))  # referral, instagram, website, wedding_show, etc.
+
     total_spent = db.Column(db.Numeric(12, 2), default=0)
     event_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
@@ -116,6 +123,13 @@ class Client(db.Model):
     projects = db.relationship("Project", backref="client", lazy="dynamic")
     payments = db.relationship("Payment", backref="client", lazy="dynamic")
     messages = db.relationship("Message", backref="client", lazy="dynamic")
+    owner = db.relationship("User", foreign_keys=[owner_id])
+    contacts = db.relationship("Contact", backref="client", lazy="dynamic",
+                                cascade="all, delete-orphan", order_by="Contact.is_primary.desc()")
+    crm_notes = db.relationship("Note", backref="client", lazy="dynamic",
+                                 cascade="all, delete-orphan", order_by="Note.created_at.desc()")
+    crm_tasks = db.relationship("Task", backref="client", lazy="dynamic",
+                                 cascade="all, delete-orphan", order_by="Task.due_date")
 
     def __repr__(self):
         return f"<Client {self.name}>"

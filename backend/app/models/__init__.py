@@ -3,6 +3,9 @@ Evently — Model Registry
 Import all models here so Alembic can auto-detect them.
 """
 from app.models.core import Company, User, Client, UserRole
+from app.models.crm import (
+    Contact, Note, Task, LifecycleStage, TaskStatus, TaskPriority,
+)
 from app.models.inventory import (
     InventoryItem, InventoryPool, ItemPhoto, Barcode,
     SetAside, ScanLog, ItemStatus, SetAsideReason, ScanAction,
@@ -22,6 +25,7 @@ from app.models.operations import (
 
 __all__ = [
     "Company", "User", "Client", "UserRole",
+    "Contact", "Note", "Task", "LifecycleStage", "TaskStatus", "TaskPriority",
     "InventoryItem", "InventoryPool", "ItemPhoto", "Barcode",
     "SetAside", "ScanLog", "ItemStatus", "SetAsideReason", "ScanAction",
     "Project", "ProjectLineItem", "Proposal", "Signature", "ProjectStage",

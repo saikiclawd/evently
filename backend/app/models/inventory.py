@@ -4,7 +4,6 @@ Evently — Inventory Models
 import enum
 from app.extensions import db
 from app.models.core import gen_uuid, utcnow
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 
 
 class ItemStatus(enum.Enum):
@@ -33,8 +32,8 @@ class ScanAction(enum.Enum):
 class InventoryPool(db.Model):
     __tablename__ = "inventory_pools"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
 
@@ -46,9 +45,9 @@ class InventoryPool(db.Model):
 class InventoryItem(db.Model):
     __tablename__ = "inventory_items"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    company_id = db.Column(UUID(as_uuid=False), db.ForeignKey("companies.id"), nullable=False, index=True)
-    pool_id = db.Column(UUID(as_uuid=False), db.ForeignKey("inventory_pools.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    company_id = db.Column(db.String(36), db.ForeignKey("companies.id"), nullable=False, index=True)
+    pool_id = db.Column(db.String(36), db.ForeignKey("inventory_pools.id"), nullable=True)
 
     name = db.Column(db.String(300), nullable=False)
     description = db.Column(db.Text)
@@ -60,9 +59,9 @@ class InventoryItem(db.Model):
     total_quantity = db.Column(db.Integer, nullable=False, default=1)
     available_quantity = db.Column(db.Integer, nullable=False, default=1)
 
-    tags = db.Column(ARRAY(db.String), default=list)
-    attributes = db.Column(JSONB, default=dict)  # color, size, material, etc.
-    custom_columns = db.Column(JSONB, default=dict)
+    tags = db.Column(db.JSON, default=list)
+    attributes = db.Column(db.JSON, default=dict)  # color, size, material, etc.
+    custom_columns = db.Column(db.JSON, default=dict)
 
     purchase_price = db.Column(db.Numeric(10, 2))
     purchase_location = db.Column(db.String(200))
@@ -139,8 +138,8 @@ class InventoryItem(db.Model):
 class ItemPhoto(db.Model):
     __tablename__ = "item_photos"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    item_id = db.Column(UUID(as_uuid=False), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    item_id = db.Column(db.String(36), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
     url = db.Column(db.String(500), nullable=False)
     sort_order = db.Column(db.Integer, default=0)
     is_primary = db.Column(db.Boolean, default=False)
@@ -152,8 +151,8 @@ class ItemPhoto(db.Model):
 class Barcode(db.Model):
     __tablename__ = "barcodes"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    item_id = db.Column(UUID(as_uuid=False), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    item_id = db.Column(db.String(36), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
     code = db.Column(db.String(100), unique=True, nullable=False, index=True)
     barcode_type = db.Column(db.String(20), default="code128")  # code128, qr
     image_url = db.Column(db.String(500))
@@ -165,12 +164,12 @@ class Barcode(db.Model):
 class SetAside(db.Model):
     __tablename__ = "set_asides"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    item_id = db.Column(UUID(as_uuid=False), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    item_id = db.Column(db.String(36), db.ForeignKey("inventory_items.id", ondelete="CASCADE"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     reason = db.Column(db.Enum(SetAsideReason, name="set_aside_reason"), nullable=False)
     notes = db.Column(db.Text)
-    resolved_by = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=True)
+    resolved_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
     resolved_at = db.Column(db.DateTime(timezone=True), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow)
 
@@ -180,10 +179,10 @@ class SetAside(db.Model):
 class ScanLog(db.Model):
     __tablename__ = "scan_logs"
 
-    id = db.Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    barcode_id = db.Column(UUID(as_uuid=False), db.ForeignKey("barcodes.id"), nullable=False)
-    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey("users.id"), nullable=False)
-    project_id = db.Column(UUID(as_uuid=False), db.ForeignKey("projects.id"), nullable=True)
+    id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
+    barcode_id = db.Column(db.String(36), db.ForeignKey("barcodes.id"), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
+    project_id = db.Column(db.String(36), db.ForeignKey("projects.id"), nullable=True)
     action = db.Column(db.Enum(ScanAction, name="scan_action"), nullable=False)
     condition_notes = db.Column(db.Text)
     scanned_at = db.Column(db.DateTime(timezone=True), default=utcnow)

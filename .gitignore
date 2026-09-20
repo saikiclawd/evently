@@ -52,6 +52,10 @@ logs/
 *.sql
 *.sql.gz
 *.dump
+*.db
+*.sqlite
+*.sqlite3
+instance/
 
 # ── Uploads ──
 uploads/

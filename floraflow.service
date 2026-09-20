@@ -1,0 +1,32 @@
+[Unit]
+Description=FloraFlow — Gunicorn (Flask + React)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+User=deploy
+Group=deploy
+WorkingDirectory=/opt/evently/backend
+
+# Load environment from .env
+EnvironmentFile=/opt/evently/.env
+
+# Activate venv and launch gunicorn
+ExecStart=/opt/evently/.venv/bin/gunicorn \
+    --config /opt/evently/backend/gunicorn.conf.py \
+    "app:create_app()"
+
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+PrivateTmp=true
+Restart=on-failure
+RestartSec=5
+
+# Logging handled by gunicorn accesslog/errorlog in gunicorn.conf.py
+StandardOutput=append:/opt/evently/logs/gunicorn-error.log
+StandardError=append:/opt/evently/logs/gunicorn-error.log
+
+[Install]
+WantedBy=multi-user.target

@@ -15,6 +15,11 @@ import DispatchPage from "@/pages/DispatchPage";
 import CalendarPage from "@/pages/CalendarPage";
 import ReportsPage from "@/pages/ReportsPage";
 import WebsitePage from "@/pages/WebsitePage";
+import RecipeStudioPage from "@/pages/RecipeStudioPage";
+import EventPlannerPage from "@/pages/EventPlannerPage";
+import OrderEnginePage from "@/pages/OrderEnginePage";
+import FloraCatalogPage from "@/pages/FloraCatalogPage";
+import AIAnalyzerPage from "@/pages/AIAnalyzerPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +69,12 @@ function AppRoutes() {
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="website" element={<WebsitePage />} />
+        {/* FloraFlow — Phase 1 */}
+        <Route path="flora/recipes"  element={<RecipeStudioPage />} />
+        <Route path="flora/events"   element={<EventPlannerPage />} />
+        <Route path="flora/orders"   element={<OrderEnginePage />} />
+        <Route path="flora/catalog"  element={<FloraCatalogPage />} />
+        <Route path="flora/ai"       element={<AIAnalyzerPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

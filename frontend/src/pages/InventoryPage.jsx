@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, QrCode, Upload, X } from "lucide-react";
+import { Plus, Search, QrCode, Upload, X, Package } from "lucide-react";
 import { useInventory, useCategories, useCreateInventoryItem } from "@/hooks/useApi";
 import toast from "react-hot-toast";
 
